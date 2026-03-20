@@ -1,0 +1,6 @@
+css: /Users/katzdm/src/brevzin/cpp_proposals/md/pandoc.css
+filters: [/Users/katzdm/src/brevzin/cpp_proposals/md/pandoc.py]
+
+metadata:
+  highlighting:
+    inline-code: cpp
