@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2026-03-20" />
+  <meta name="dcterms.date" content="2026-03-21" />
   <title>Wording for CWG3150</title>
   <style>
       code{white-space: pre-wrap;}
@@ -582,7 +582,7 @@ background-color: #ffff00;
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2026-03-20</td>
+    <td>2026-03-21</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -742,10 +742,10 @@ core constant expression.</li>
 ([expr.const]).</p>
 </div>
 <div class="addu">
-<p>For each declaration <em>D</em> of a variable or structured binding
-of type <code class="sourceCode cpp">T</code> which introduces an object
-or reference whose constituent value or constituent reference is, points
-to, or refers to a complete object of consteval-only type
+<p>For each declaration <em>D</em> that declares a variable of type
+<code class="sourceCode cpp">T</code> with a constituent value or
+constituent reference that is, points to, or refers to an object whose
+complete object is of consteval-only type
 <code class="sourceCode cpp">X</code>, one of the following shall
 hold:</p>
 <ul>
@@ -754,26 +754,31 @@ hold:</p>
 <code class="sourceCode cpp"><span class="kw">constexpr</span></code>;
 or</li>
 <li><span class="marginalizedparent"><a class="marginalized">(12.10)</a></span>
-the lifetime of each object or reference introduced by the entity
-declared by <em>D</em> shall begin and end within a manifestly
-constant-evaluated expression;</li>
+the lifetime of each object or reference introduced by the variable
+shall begin and end within a manifestly constant-evaluated
+expression;</li>
 </ul>
-<p>a diagnostic is required only if</p>
-<ul>
-<li><span class="marginalizedparent"><a class="marginalized">(12.11)</a></span>
-<em>D</em> is reachable and</li>
-<li><span class="marginalizedparent"><a class="marginalized">(12.12)</a></span>
-<code class="sourceCode cpp">T</code> is observably consteval-only</li>
-</ul>
-<p>from the end of either the definition domain in which <em>D</em>
-appears or that in which <code class="sourceCode cpp">T</code> is
-defined.</p>
-<p>Each potentially-evaluated expression or conversion <em>E</em> of
-consteval-only type <code class="sourceCode cpp">T</code> shall be in an
-immediate functon context; a diagnostic is required only if the
-innermost declaration that contains <em>E</em> is reachable from a
-program point where <code class="sourceCode cpp">T</code> is observably
-consteval-only.</p>
+<p>a diagnostic is required only if either
+<code class="sourceCode cpp">T</code> or
+<code class="sourceCode cpp">X</code> is observably consteval-only from
+the end of the definition domain in which <em>D</em> appears.</p>
+<p>For any potentially-evaluated expression or conversion <em>E</em> of
+type <code class="sourceCode cpp">T</code> whose result is, points to,
+or refers to an object whose complete object is of consteval-only type
+<code class="sourceCode cpp">X</code>, <em>E</em> shall be in an
+immediate function context; a diagnostic is required only if either
+<code class="sourceCode cpp">T</code> or
+<code class="sourceCode cpp">X</code> is observably consteval-only from
+the end of the definition domain in which <em>E</em> appears.</p>
+<p>For each manifestly constant-evaluated expression or conversion
+<em>E</em> whose result has a constituent value or a constituent
+reference that is, points to, or refers to an object whose complete
+object is of type <code class="sourceCode cpp">X</code> that is
+consteval-only, <code class="sourceCode cpp">X</code> shall be
+observably consteval-only from the point following where <em>E</em>
+appears; a diagnostic is only required if
+<code class="sourceCode cpp">X</code> is observably consteval-only from
+the end of the definition domain in which <em>E</em> appears.</p>
 <p><span class="note"><span>[ <em>Note:</em> </span>An expression is
 immediate-escalating if its type is observably consteval-only from the
 program point following the expression ([expr.const]).<span> — <em>end

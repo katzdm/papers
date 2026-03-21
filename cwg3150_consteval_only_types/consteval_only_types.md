@@ -83,19 +83,16 @@ Every function of consteval-only type shall be an immediate function ([expr.cons
 :::
 
 ::: addu
-For each declaration _D_ of a variable or structured binding of type `T` which introduces an object or reference whose constituent value or constituent reference is, points to, or refers to a complete object of consteval-only type `X`, one of the following shall hold:
+For each declaration _D_ that declares a variable of type `T` with a constituent value or constituent reference that is, points to, or refers to an object whose complete object is of consteval-only type `X`, one of the following shall hold:
 
 * [12.9]{.pnum} _D_ is `constexpr`; or
-* [12.10]{.pnum} the lifetime of each object or reference introduced by the entity declared by _D_ shall begin and end within a manifestly constant-evaluated expression;
+* [12.10]{.pnum} the lifetime of each object or reference introduced by the variable shall begin and end within a manifestly constant-evaluated expression;
 
-a diagnostic is required only if
+a diagnostic is required only if either `T` or `X` is observably consteval-only from the end of the definition domain in which _D_ appears.
 
-* [12.11]{.pnum} _D_ is reachable and
-* [12.12]{.pnum} `T` is observably consteval-only
+For any potentially-evaluated expression or conversion _E_ of type `T` whose result is, points to, or refers to an object whose complete object is of consteval-only type `X`, _E_ shall be in an immediate function context; a diagnostic is required only if either `T` or `X` is observably consteval-only from the end of the definition domain in which _E_ appears.
 
-from the end of either the definition domain in which _D_ appears or that in which `T` is defined.
-
-Each potentially-evaluated expression or conversion _E_ of consteval-only type `T` shall be in an immediate functon context; a diagnostic is required only if the innermost declaration that contains _E_ is reachable from a program point where `T` is observably consteval-only.
+For each manifestly constant-evaluated expression or conversion _E_ whose result has a constituent value or a constituent reference that is, points to, or refers to an object whose complete object is of type `X` that is consteval-only, `X` shall be observably consteval-only from the point following where _E_ appears; a diagnostic is only required if `X` is observably consteval-only from the end of the definition domain in which _E_ appears.
 
 [An expression is immediate-escalating if its type is observably consteval-only from the program point following the expression ([expr.const]).]{.note}
 
