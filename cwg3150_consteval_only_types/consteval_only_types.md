@@ -1,8 +1,8 @@
 ---
-title: "Wording for CWG3150"
-document: PwxyzRא
+title: "Addressing incomplete consteval-only types"
+document: P4132R0
 date: today
-audience: CWG
+audience: EWG, CWG
 author:
     - name: Dan Katz
       email: <katzdm@gmail.com>
@@ -13,10 +13,26 @@ tag: reflection
 
 # Introduction
 
-CWG3150 points out the difficulty of determining whether an incomplete class, or a pointer to such a class, is an incomplete type. This paper seeks to address these concerns.
+CWG3150 points out the difficulty of determining whether an incomplete class, or a pointer to such a class, is a consteval-only type. This paper seeks to address these concerns.
 
+Since consteval-only types were merged into the Committee Draft for C++26 in Sofia (June 2025), three challenges pertaining to their specification have been raised:
 
-# Changes implemented
+1. Since function types whose parameters are of consteval-only type are themselves of consteval-only type, and since functions of consteval-only type "shall" be immediate
+   functions, it is not always possible for a class of consteval-only type to override a member function declared by a base class that is not consteval-only. This is because
+   immediate member functions cannot override non-immediate member functions. The issue arose with `std::meta::exception::what`, which (as demonstrated by GCC implementation
+   experience) could not be implemented. The solution was to allow immediate member functions to override non-immediate member functions when the type is consteval-only.
+2. Because pointers to consteval-only types (e.g., `std::meta::info *`) are themselves consteval-only, the implementation cannot know whether a class whose data member has
+   some `S<int> *` type is consteval-only until `S<int>` has been instantiated. As this can "affect the semantics of the program", this has the potential to require many
+   instantiations that are not required today, which would be expensive and would surely break existing code.
+3. We somehow forgot that classes can be incomplete, and that this hampers the implementation's capacity to determine whether that class (or one holding a pointer to it) is
+   consteval-only. Whoops!
+
+As mentioned, issue (1) has already been addressed, whereas (2) and (3) remain open. The wording changes proposed by this paper address the remaining issues, while also proposing
+changes that will remove the necessity for the change introduced to address (1).
+
+# Proposed changes
+
+TODO: Flesh out if there's time.
 
 * Introduce notion of "observably consteval-only" types.
   * Checking whether a type is observably consteval-only does not trigger instantiation.
@@ -83,16 +99,18 @@ Every function of consteval-only type shall be an immediate function ([expr.cons
 :::
 
 ::: addu
-For each declaration _D_ that declares a variable of type `T` with a constituent value or constituent reference that is, points to, or refers to an object whose complete object is of consteval-only type `X`, one of the following shall hold:
+For each declaration _D_ of a variable whose type `T` is consteval-only, one of the following shall hold:
 
 * [12.9]{.pnum} _D_ is `constexpr`; or
-* [12.10]{.pnum} the lifetime of each object or reference introduced by the variable shall begin and end within a manifestly constant-evaluated expression;
+* [12.10]{.pnum} the lifetime of each object or reference introduced by the variable begins and ends within a manifestly constant-evaluated expression;
 
-a diagnostic is required only if either `T` or `X` is observably consteval-only from the end of the definition domain in which _D_ appears.
+a diagnostic is required only if `T` is observably consteval-only from the end of the definition domain in which _D_ appears.
 
-For any potentially-evaluated expression or conversion _E_ of type `T` whose result is, points to, or refers to an object whose complete object is of consteval-only type `X`, _E_ shall be in an immediate function context; a diagnostic is required only if either `T` or `X` is observably consteval-only from the end of the definition domain in which _E_ appears.
+For each definition _D_ of a function whose parameter is of type `T` that is consteval-only, `T` shall be observably consteval-only from the point following _D_; a diagnostic is only required if `T` is observably consteval-only from the end of the definition domain in which _D_ appears.
 
-For each manifestly constant-evaluated expression or conversion _E_ whose result has a constituent value or a constituent reference that is, points to, or refers to an object whose complete object is of type `X` that is consteval-only, `X` shall be observably consteval-only from the point following where _E_ appears; a diagnostic is only required if `X` is observably consteval-only from the end of the definition domain in which _E_ appears.
+Each potentially-evaluated expression or conversion _E_ of consteval-only type `T` shall be in an immediate function context; a diagnostic is required only if `T` is observably consteval-only from the end of the definition domain in which _E_ appears.
+
+For each manifestly constant-evaluated expression or conversion _E_ whose result has a constituent value or a constituent reference that is, points to, or refers to an object whose complete object is of type `T` that is consteval-only, `T` shall be observably consteval-only from the point following where _E_ appears; a diagnostic is only required if `T` is observably consteval-only from the end of the definition domain in which _E_ appears.
 
 [An expression is immediate-escalating if its type is observably consteval-only from the program point following the expression ([expr.const]).]{.note}
 
@@ -143,10 +161,11 @@ Modify [expr.const]/26 as follows:
 [26]{.pnum} An immediate function is a function that is [either]{.addu}
 
 * [26.1]{.pnum} declared with the `consteval` specifier[,]{.rm} [or]{.addu}
-* [an immediate-escalating function whose type is consteval-only ([basic.types.general]), or]{.rm}
-* [26.2]{.pnum} an immediate-escalating function _F_ whose function body contains either
-  * [26.2.1]{.pnum} an immediate-escalating expression or
-  * [26.2.2]{.pnum} a definition of a non-constexpr variable [with]{.rm} [whose type is observably]{.addu} consteval-only [from the program point immediate following that definition]{.addu}
+* [26.2]{.pnum} an immediate-escalating function whose [parameter has a]{.addu} type [that]{.addu} is [observably]{.addu} consteval-only ([basic.types.general]) [from the program point
+  immediately following that function's definition]{.addu}, or
+* [26.3]{.pnum} an immediate-escalating function _F_ whose function body contains either
+  * [26.3.1]{.pnum} an immediate-escalating expression or
+  * [26.3.2]{.pnum} a definition of a non-constexpr variable [with]{.rm} [whose type is observably]{.addu} consteval-only [from the program point immediately following that definition]{.addu}
 
   whose innermost enclosing non-block scope is _F_'s function parameter scope.
 

@@ -5,7 +5,7 @@
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="dcterms.date" content="2026-03-21" />
-  <title>Wording for CWG3150</title>
+  <title>Addressing incomplete consteval-only types</title>
   <style>
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -572,12 +572,15 @@ background-color: #ffff00;
 <body>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Wording for CWG3150</h1>
+<h1 class="title" style="text-align:center">Addressing incomplete
+consteval-only types</h1>
 <table style="border:none;float:right">
   <tr>
     <td>Document #:</td>
     <td>
-      PwxyzRא
+      P4132R0
+      [<a href="https://wg21.link/P4132">Latest</a>]
+      [<a href="https://wg21.link/P4132/status">Status</a>]
     </td>
   </tr>
   <tr>
@@ -591,7 +594,7 @@ background-color: #ffff00;
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      CWG<br>
+      EWG, CWG<br>
     </td>
   </tr>
   <tr>
@@ -607,7 +610,7 @@ background-color: #ffff00;
 <h1 id="toctitle">Contents</h1>
 <ul>
 <li><a href="#introduction" id="toc-introduction"><span class="toc-section-number">1</span> Introduction<span></span></a></li>
-<li><a href="#changes-implemented" id="toc-changes-implemented"><span class="toc-section-number">2</span> Changes implemented<span></span></a>
+<li><a href="#proposed-changes" id="toc-proposed-changes"><span class="toc-section-number">2</span> Proposed changes<span></span></a>
 <ul>
 <li><a href="#wording" id="toc-wording"><span class="toc-section-number">2.1</span> Wording<span></span></a></li>
 </ul></li>
@@ -616,10 +619,42 @@ background-color: #ffff00;
 <h1 data-number="1" style="border-bottom:1px solid #cccccc" id="introduction"><span class="header-section-number">1</span>
 Introduction<a href="#introduction" class="self-link"></a></h1>
 <p>CWG3150 points out the difficulty of determining whether an
-incomplete class, or a pointer to such a class, is an incomplete type.
-This paper seeks to address these concerns.</p>
-<h1 data-number="2" style="border-bottom:1px solid #cccccc" id="changes-implemented"><span class="header-section-number">2</span>
-Changes implemented<a href="#changes-implemented" class="self-link"></a></h1>
+incomplete class, or a pointer to such a class, is a consteval-only
+type. This paper seeks to address these concerns.</p>
+<p>Since consteval-only types were merged into the Committee Draft for
+C++26 in Sofia (June 2025), three challenges pertaining to their
+specification have been raised:</p>
+<ol type="1">
+<li>Since function types whose parameters are of consteval-only type are
+themselves of consteval-only type, and since functions of consteval-only
+type “shall” be immediate functions, it is not always possible for a
+class of consteval-only type to override a member function declared by a
+base class that is not consteval-only. This is because immediate member
+functions cannot override non-immediate member functions. The issue
+arose with <code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>exception<span class="op">::</span>what</code>,
+which (as demonstrated by GCC implementation experience) could not be
+implemented. The solution was to allow immediate member functions to
+override non-immediate member functions when the type is
+consteval-only.</li>
+<li>Because pointers to consteval-only types (e.g., <code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>info <span class="op">*</span></code>)
+are themselves consteval-only, the implementation cannot know whether a
+class whose data member has some <code class="sourceCode cpp">S<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> <span class="op">*</span></code>
+type is consteval-only until <code class="sourceCode cpp">S<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span></code>
+has been instantiated. As this can “affect the semantics of the
+program”, this has the potential to require many instantiations that are
+not required today, which would be expensive and would surely break
+existing code.</li>
+<li>We somehow forgot that classes can be incomplete, and that this
+hampers the implementation’s capacity to determine whether that class
+(or one holding a pointer to it) is consteval-only. Whoops!</li>
+</ol>
+<p>As mentioned, issue (1) has already been addressed, whereas (2) and
+(3) remain open. The wording changes proposed by this paper address the
+remaining issues, while also proposing changes that will remove the
+necessity for the change introduced to address (1).</p>
+<h1 data-number="2" style="border-bottom:1px solid #cccccc" id="proposed-changes"><span class="header-section-number">2</span>
+Proposed changes<a href="#proposed-changes" class="self-link"></a></h1>
+<p>TODO: Flesh out if there’s time.</p>
 <ul>
 <li>Introduce notion of “observably consteval-only” types.
 <ul>
@@ -742,12 +777,9 @@ core constant expression.</li>
 ([expr.const]).</p>
 </div>
 <div class="addu">
-<p>For each declaration <em>D</em> that declares a variable of type
-<code class="sourceCode cpp">T</code> with a constituent value or
-constituent reference that is, points to, or refers to an object whose
-complete object is of consteval-only type
-<code class="sourceCode cpp">X</code>, one of the following shall
-hold:</p>
+<p>For each declaration <em>D</em> of a variable whose type
+<code class="sourceCode cpp">T</code> is consteval-only, one of the
+following shall hold:</p>
 <ul>
 <li><span class="marginalizedparent"><a class="marginalized">(12.9)</a></span>
 <em>D</em> is
@@ -755,29 +787,30 @@ hold:</p>
 or</li>
 <li><span class="marginalizedparent"><a class="marginalized">(12.10)</a></span>
 the lifetime of each object or reference introduced by the variable
-shall begin and end within a manifestly constant-evaluated
-expression;</li>
+begins and ends within a manifestly constant-evaluated expression;</li>
 </ul>
-<p>a diagnostic is required only if either
-<code class="sourceCode cpp">T</code> or
-<code class="sourceCode cpp">X</code> is observably consteval-only from
+<p>a diagnostic is required only if
+<code class="sourceCode cpp">T</code> is observably consteval-only from
 the end of the definition domain in which <em>D</em> appears.</p>
-<p>For any potentially-evaluated expression or conversion <em>E</em> of
-type <code class="sourceCode cpp">T</code> whose result is, points to,
-or refers to an object whose complete object is of consteval-only type
-<code class="sourceCode cpp">X</code>, <em>E</em> shall be in an
-immediate function context; a diagnostic is required only if either
-<code class="sourceCode cpp">T</code> or
-<code class="sourceCode cpp">X</code> is observably consteval-only from
+<p>For each definition <em>D</em> of a function whose parameter is of
+type <code class="sourceCode cpp">T</code> that is consteval-only,
+<code class="sourceCode cpp">T</code> shall be observably consteval-only
+from the point following <em>D</em>; a diagnostic is only required if
+<code class="sourceCode cpp">T</code> is observably consteval-only from
+the end of the definition domain in which <em>D</em> appears.</p>
+<p>Each potentially-evaluated expression or conversion <em>E</em> of
+consteval-only type <code class="sourceCode cpp">T</code> shall be in an
+immediate function context; a diagnostic is required only if
+<code class="sourceCode cpp">T</code> is observably consteval-only from
 the end of the definition domain in which <em>E</em> appears.</p>
 <p>For each manifestly constant-evaluated expression or conversion
 <em>E</em> whose result has a constituent value or a constituent
 reference that is, points to, or refers to an object whose complete
-object is of type <code class="sourceCode cpp">X</code> that is
-consteval-only, <code class="sourceCode cpp">X</code> shall be
+object is of type <code class="sourceCode cpp">T</code> that is
+consteval-only, <code class="sourceCode cpp">T</code> shall be
 observably consteval-only from the point following where <em>E</em>
 appears; a diagnostic is only required if
-<code class="sourceCode cpp">X</code> is observably consteval-only from
+<code class="sourceCode cpp">T</code> is observably consteval-only from
 the end of the definition domain in which <em>E</em> appears.</p>
 <p><span class="note"><span>[ <em>Note:</em> </span>An expression is
 immediate-escalating if its type is observably consteval-only from the
@@ -877,19 +910,21 @@ declared with the
 <code class="sourceCode cpp"><span class="kw">consteval</span></code>
 specifier<span class="rm" style="color: #bf0303"><del>,</del></span>
 <span class="addu">or</span></p></li>
-<li><p><span class="rm" style="color: #bf0303"><del>an
-immediate-escalating function whose type is consteval-only
-([basic.types.general]), or</del></span></p></li>
 <li><p><span class="marginalizedparent"><a class="marginalized">(26.2)</a></span> an
+immediate-escalating function whose <span class="addu">parameter has
+a</span> type <span class="addu">that</span> is <span class="addu">observably</span> consteval-only ([basic.types.general])
+<span class="addu">from the program point immediately following that
+function’s definition</span>, or</p></li>
+<li><p><span class="marginalizedparent"><a class="marginalized">(26.3)</a></span> an
 immediate-escalating function <em>F</em> whose function body contains
 either</p>
 <ul>
-<li><span class="marginalizedparent"><a class="marginalized">(26.2.1)</a></span>
+<li><span class="marginalizedparent"><a class="marginalized">(26.3.1)</a></span>
 an immediate-escalating expression or</li>
-<li><span class="marginalizedparent"><a class="marginalized">(26.2.2)</a></span> a
+<li><span class="marginalizedparent"><a class="marginalized">(26.3.2)</a></span> a
 definition of a non-constexpr variable <span class="rm" style="color: #bf0303"><del>with</del></span> <span class="addu">whose
 type is observably</span> consteval-only <span class="addu">from the
-program point immediate following that definition</span></li>
+program point immediately following that definition</span></li>
 </ul>
 <p>whose innermost enclosing non-block scope is <em>F</em>’s function
 parameter scope.</p>
