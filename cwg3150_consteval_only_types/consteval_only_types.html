@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2026-03-21" />
+  <meta name="dcterms.date" content="2026-03-22" />
   <title>Addressing incomplete consteval-only types</title>
   <style>
       code{white-space: pre-wrap;}
@@ -585,7 +585,7 @@ consteval-only types</h1>
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2026-03-21</td>
+    <td>2026-03-22</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -618,9 +618,6 @@ consteval-only types</h1>
 </div>
 <h1 data-number="1" style="border-bottom:1px solid #cccccc" id="introduction"><span class="header-section-number">1</span>
 Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>CWG3150 points out the difficulty of determining whether an
-incomplete class, or a pointer to such a class, is a consteval-only
-type. This paper seeks to address these concerns.</p>
 <p>Since consteval-only types were merged into the Committee Draft for
 C++26 in Sofia (June 2025), three challenges pertaining to their
 specification have been raised:</p>
@@ -649,9 +646,9 @@ hampers the implementation’s capacity to determine whether that class
 (or one holding a pointer to it) is consteval-only. Whoops!</li>
 </ol>
 <p>As mentioned, issue (1) has already been addressed, whereas (2) and
-(3) remain open. The wording changes proposed by this paper address the
-remaining issues, while also proposing changes that will remove the
-necessity for the change introduced to address (1).</p>
+(3) remain open. The wording changes proposed by this paper attempt to
+address the remaining issues, while also proposing changes that will
+remove the necessity for the change introduced to address (1).</p>
 <h1 data-number="2" style="border-bottom:1px solid #cccccc" id="proposed-changes"><span class="header-section-number">2</span>
 Proposed changes<a href="#proposed-changes" class="self-link"></a></h1>
 <p>TODO: Flesh out if there’s time.</p>

@@ -13,8 +13,6 @@ tag: reflection
 
 # Introduction
 
-CWG3150 points out the difficulty of determining whether an incomplete class, or a pointer to such a class, is a consteval-only type. This paper seeks to address these concerns.
-
 Since consteval-only types were merged into the Committee Draft for C++26 in Sofia (June 2025), three challenges pertaining to their specification have been raised:
 
 1. Since function types whose parameters are of consteval-only type are themselves of consteval-only type, and since functions of consteval-only type "shall" be immediate
@@ -27,8 +25,8 @@ Since consteval-only types were merged into the Committee Draft for C++26 in Sof
 3. We somehow forgot that classes can be incomplete, and that this hampers the implementation's capacity to determine whether that class (or one holding a pointer to it) is
    consteval-only. Whoops!
 
-As mentioned, issue (1) has already been addressed, whereas (2) and (3) remain open. The wording changes proposed by this paper address the remaining issues, while also proposing
-changes that will remove the necessity for the change introduced to address (1).
+As mentioned, issue (1) has already been addressed, whereas (2) and (3) remain open. The wording changes proposed by this paper attempt to address the remaining issues,
+while also proposing changes that will remove the necessity for the change introduced to address (1).
 
 # Proposed changes
 
