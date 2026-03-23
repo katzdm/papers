@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2026-03-22" />
+  <meta name="dcterms.date" content="2026-03-23" />
   <title>Addressing incomplete consteval-only types</title>
   <style>
       code{white-space: pre-wrap;}
@@ -585,7 +585,7 @@ consteval-only types</h1>
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2026-03-22</td>
+    <td>2026-03-23</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -618,21 +618,10 @@ consteval-only types</h1>
 </div>
 <h1 data-number="1" style="border-bottom:1px solid #cccccc" id="introduction"><span class="header-section-number">1</span>
 Introduction<a href="#introduction" class="self-link"></a></h1>
-<p>Since consteval-only types were merged into the Committee Draft for
-C++26 in Sofia (June 2025), three challenges pertaining to their
-specification have been raised:</p>
+<p>CWG3150 points out the difficulty of determining whether an
+incomplete class, or a pointer to such a class, is a consteval-only
+type. Discussion of the issue has surfaced two challenges:</p>
 <ol type="1">
-<li>Since function types whose parameters are of consteval-only type are
-themselves of consteval-only type, and since functions of consteval-only
-type “shall” be immediate functions, it is not always possible for a
-class of consteval-only type to override a member function declared by a
-base class that is not consteval-only. This is because immediate member
-functions cannot override non-immediate member functions. The issue
-arose with <code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>exception<span class="op">::</span>what</code>,
-which (as demonstrated by GCC implementation experience) could not be
-implemented. The solution was to allow immediate member functions to
-override non-immediate member functions when the type is
-consteval-only.</li>
 <li>Because pointers to consteval-only types (e.g., <code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>info <span class="op">*</span></code>)
 are themselves consteval-only, the implementation cannot know whether a
 class whose data member has some <code class="sourceCode cpp">S<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> <span class="op">*</span></code>
@@ -645,10 +634,8 @@ existing code.</li>
 hampers the implementation’s capacity to determine whether that class
 (or one holding a pointer to it) is consteval-only. Whoops!</li>
 </ol>
-<p>As mentioned, issue (1) has already been addressed, whereas (2) and
-(3) remain open. The wording changes proposed by this paper attempt to
-address the remaining issues, while also proposing changes that will
-remove the necessity for the change introduced to address (1).</p>
+<p>The wording changes proposed by this paper attempt to address these
+issues.</p>
 <h1 data-number="2" style="border-bottom:1px solid #cccccc" id="proposed-changes"><span class="header-section-number">2</span>
 Proposed changes<a href="#proposed-changes" class="self-link"></a></h1>
 <p>TODO: Flesh out if there’s time.</p>
@@ -657,11 +644,8 @@ Proposed changes<a href="#proposed-changes" class="self-link"></a></h1>
 <ul>
 <li>Checking whether a type is observably consteval-only does not
 trigger instantiation.</li>
-</ul></li>
-<li>Function types are no longer consteval-only.
-<ul>
-<li>Rollback the rule that consteval functions of consteval-only type
-can override non-consteval functions.</li>
+<li>Pointers-to-consteval-only specializations are only consteval-only
+if the specialization is instantiated.</li>
 </ul></li>
 </ul>
 <h2 data-number="2.1" id="wording"><span class="header-section-number">2.1</span> Wording<a href="#wording" class="self-link"></a></h2>
@@ -683,13 +667,30 @@ to <code class="sourceCode cpp">T</code>, or array of
 to a consteval-only type,</del></span></li>
 <li><span class="rm" style="color: #bf0303"><del>an array of
 consteval-only type,</del></span></li>
-<li><span class="rm" style="color: #bf0303"><del>a function type having
-a return type or any parameter type that is
-consteval-only,</del></span></li>
 <li><span class="marginalizedparent"><a class="marginalized">(12.3)</a></span> a
-class type with <span class="rm" style="color: #bf0303"><del>any</del></span> <span class="addu">a</span>
-non-static data member <span class="rm" style="color: #bf0303"><del>having</del></span> <span class="addu">of</span> consteval-only type, or</li>
+function type having a return type or any parameter type that is
+consteval-only,</li>
 <li><span class="marginalizedparent"><a class="marginalized">(12.4)</a></span> a
+class type <span class="addu"><code class="sourceCode cpp">C</code> for
+which</span> <span class="rm" style="color: #bf0303"><del>with any
+non-static data member having consteval-only type</del></span>
+<ul>
+<li><span class="addu"><span class="marginalizedparent"><a class="marginalized">(12.4.1)</a></span>
+<code class="sourceCode cpp">C</code> is complete from some point in the
+program,</span></li>
+<li><span class="addu"><span class="marginalizedparent"><a class="marginalized">(12.4.2)</a></span>
+<code class="sourceCode cpp">C</code> has a non-static data member whose
+type is consteval-only, and</span></li>
+<li><span class="marginalizedparent"><a class="marginalized">(12.4.3)</a></span>
+<span class="addu">if <code class="sourceCode cpp">C</code> is a
+specialization of a templated class, then
+<code class="sourceCode cpp">C</code> is either an explicit
+specialization or is referenced in manner that requires the complete
+definition of <code class="sourceCode cpp">C</code> for a purpose other
+than determining whether <code class="sourceCode cpp">C</code> is a
+consteval-only type</span>, or</li>
+</ul></li>
+<li><span class="marginalizedparent"><a class="marginalized">(12.5)</a></span> a
 type “pointer to member of class <code class="sourceCode cpp">C</code>
 of type <code class="sourceCode cpp">T</code>”, where at least one of
 <code class="sourceCode cpp">C</code> or
@@ -708,29 +709,22 @@ of type <code class="sourceCode cpp">T</code>”, where at least one of
 <code class="sourceCode cpp">T</code>, where
 <code class="sourceCode cpp">T</code> is observably consteval-only from
 <em>P</em>,</p></li>
-<li><p><span class="marginalizedparent"><a class="marginalized">(12.x)</a></span> a
+<li><p><span class="marginalizedparent"><a class="marginalized">(12.7)</a></span> a
 class type <code class="sourceCode cpp">C</code> for which</p>
 <ul>
-<li><span class="marginalizedparent"><a class="marginalized">(12.x.2)</a></span>
+<li><span class="marginalizedparent"><a class="marginalized">(12.7.1)</a></span>
 <code class="sourceCode cpp">C</code> is complete from <em>P</em>,</li>
-<li><span class="marginalizedparent"><a class="marginalized">(12.x.1)</a></span>
-<code class="sourceCode cpp">C</code> has at least one non-static data
-member whose type is observably consteval-only from <em>P</em>, and</li>
-<li><span class="marginalizedparent"><a class="marginalized">(12.x.3)</a></span>
+<li><span class="marginalizedparent"><a class="marginalized">(12.7.2)</a></span>
+<code class="sourceCode cpp">C</code> has a non-static data member whose
+type is observably consteval-only from <em>P</em>, and</li>
+<li><span class="marginalizedparent"><a class="marginalized">(12.7.3)</a></span>
 if <code class="sourceCode cpp">C</code> is a specialization of a
 templated class for which no declared specialization is reachable from
-<em>P</em> then either
-<ul>
-<li><span class="marginalizedparent"><a class="marginalized">(12.x.3.1)</a></span>
-the reachable definition of <code class="sourceCode cpp">C</code>
-appears in a translation unit that is reachable from <em>P</em> or</li>
-<li><span class="marginalizedparent"><a class="marginalized">(12.x.3.1)</a></span>
-<code class="sourceCode cpp">C</code> is referenced at or prior to
-<em>P</em> in a context that requires the complete definition of
-<code class="sourceCode cpp">C</code> for a purpose other than
-determining whether <code class="sourceCode cpp">C</code> is an
-observably consteval-only type.</li>
-</ul></li>
+<em>P</em>, then <code class="sourceCode cpp">C</code> is referenced at
+or prior to <em>P</em> in a context that requires the complete
+definition of <code class="sourceCode cpp">C</code> for a purpose other
+than determining whether <code class="sourceCode cpp">C</code> is an
+observably consteval-only type, or</li>
 </ul></li>
 <li><p><span class="marginalizedparent"><a class="marginalized">(12.8)</a></span> a
 type “pointer to member of class <code class="sourceCode cpp">C</code>
@@ -789,8 +783,8 @@ begins and ends within a manifestly constant-evaluated expression;</li>
 <p>a diagnostic is required only if
 <code class="sourceCode cpp">T</code> is observably consteval-only from
 the end of the definition domain in which <em>D</em> appears.</p>
-<p>For each definition <em>D</em> of a function whose parameter is of
-type <code class="sourceCode cpp">T</code> that is consteval-only,
+<p>For each definition <em>D</em> of a non-consteval function whose type
+<code class="sourceCode cpp">T</code> is consteval-only,
 <code class="sourceCode cpp">T</code> shall be observably consteval-only
 from the point following <em>D</em>; a diagnostic is only required if
 <code class="sourceCode cpp">T</code> is observably consteval-only from
@@ -800,6 +794,10 @@ consteval-only type <code class="sourceCode cpp">T</code> shall be in an
 immediate function context; a diagnostic is required only if
 <code class="sourceCode cpp">T</code> is observably consteval-only from
 the end of the definition domain in which <em>E</em> appears.</p>
+<p><span class="note"><span>[ <em>Note:</em> </span>An expression is
+immediate-escalating if its type is observably consteval-only from the
+program point following the expression ([expr.const]).<span> — <em>end
+note</em> ]</span></span></p>
 <p>For each manifestly constant-evaluated expression or conversion
 <em>E</em> whose result has a constituent value or a constituent
 reference that is, points to, or refers to an object whose complete
@@ -809,10 +807,6 @@ observably consteval-only from the point following where <em>E</em>
 appears; a diagnostic is only required if
 <code class="sourceCode cpp">T</code> is observably consteval-only from
 the end of the definition domain in which <em>E</em> appears.</p>
-<p><span class="note"><span>[ <em>Note:</em> </span>An expression is
-immediate-escalating if its type is observably consteval-only from the
-program point following the expression ([expr.const]).<span> — <em>end
-note</em> ]</span></span></p>
 </div>
 </blockquote>
 </div>
@@ -908,8 +902,7 @@ declared with the
 specifier<span class="rm" style="color: #bf0303"><del>,</del></span>
 <span class="addu">or</span></p></li>
 <li><p><span class="marginalizedparent"><a class="marginalized">(26.2)</a></span> an
-immediate-escalating function whose <span class="addu">parameter has
-a</span> type <span class="addu">that</span> is <span class="addu">observably</span> consteval-only ([basic.types.general])
+immediate-escalating function whose type is <span class="addu">observably</span> consteval-only ([basic.types.general])
 <span class="addu">from the program point immediately following that
 function’s definition</span>, or</p></li>
 <li><p><span class="marginalizedparent"><a class="marginalized">(26.3)</a></span> an
@@ -936,14 +929,18 @@ initializers used to initialize a base or member subobject
 <p>Modify [class.virtual]/18 as follows:</p>
 <div class="std">
 <blockquote>
-<p><span class="marginalizedparent"><a class="marginalized">18</a></span> A <span class="rm" style="color: #bf0303"><del>class with a</del></span>
+<p><span class="marginalizedparent"><a class="marginalized">18</a></span> A class
+<span class="addu"><code class="sourceCode cpp">C</code></span> with a
 <code class="sourceCode cpp"><span class="kw">consteval</span></code>
-virtual function <span class="rm" style="color: #bf0303"><del>that
-overrides</del></span> <span class="addu">shall not override</span> a
-virtual function that is not
+virtual function that overrides a virtual function that is not
 <code class="sourceCode cpp"><span class="kw">consteval</span></code>
-<span class="rm" style="color: #bf0303"><del>shall have consteval-only
-type</del></span>.</p>
+shall <span class="rm" style="color: #bf0303"><del>have</del></span>
+<span class="addu">be observably</span> consteval-only <span class="rm" style="color: #bf0303"><del>type</del></span> <span class="addu">from
+the point following the definition of
+<code class="sourceCode cpp">C</code></span>. A
+<code class="sourceCode cpp"><span class="kw">consteval</span></code>
+virtual function shall not be overriden by a virtual function that is
+not consteval.</p>
 </blockquote>
 </div>
 </div>

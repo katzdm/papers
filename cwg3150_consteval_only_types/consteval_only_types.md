@@ -13,20 +13,15 @@ tag: reflection
 
 # Introduction
 
-Since consteval-only types were merged into the Committee Draft for C++26 in Sofia (June 2025), three challenges pertaining to their specification have been raised:
+CWG3150 points out the difficulty of determining whether an incomplete class, or a pointer to such a class, is a consteval-only type. Discussion of the issue has surfaced two challenges:
 
-1. Since function types whose parameters are of consteval-only type are themselves of consteval-only type, and since functions of consteval-only type "shall" be immediate
-   functions, it is not always possible for a class of consteval-only type to override a member function declared by a base class that is not consteval-only. This is because
-   immediate member functions cannot override non-immediate member functions. The issue arose with `std::meta::exception::what`, which (as demonstrated by GCC implementation
-   experience) could not be implemented. The solution was to allow immediate member functions to override non-immediate member functions when the type is consteval-only.
-2. Because pointers to consteval-only types (e.g., `std::meta::info *`) are themselves consteval-only, the implementation cannot know whether a class whose data member has
+1. Because pointers to consteval-only types (e.g., `std::meta::info *`) are themselves consteval-only, the implementation cannot know whether a class whose data member has
    some `S<int> *` type is consteval-only until `S<int>` has been instantiated. As this can "affect the semantics of the program", this has the potential to require many
    instantiations that are not required today, which would be expensive and would surely break existing code.
-3. We somehow forgot that classes can be incomplete, and that this hampers the implementation's capacity to determine whether that class (or one holding a pointer to it) is
+2. We somehow forgot that classes can be incomplete, and that this hampers the implementation's capacity to determine whether that class (or one holding a pointer to it) is
    consteval-only. Whoops!
 
-As mentioned, issue (1) has already been addressed, whereas (2) and (3) remain open. The wording changes proposed by this paper attempt to address the remaining issues,
-while also proposing changes that will remove the necessity for the change introduced to address (1).
+The wording changes proposed by this paper attempt to address these issues.
 
 # Proposed changes
 
@@ -34,8 +29,7 @@ TODO: Flesh out if there's time.
 
 * Introduce notion of "observably consteval-only" types.
   * Checking whether a type is observably consteval-only does not trigger instantiation.
-* Function types are no longer consteval-only.
-  * Rollback the rule that consteval functions of consteval-only type can override non-consteval functions.
+  * Pointers-to-consteval-only specializations are only consteval-only if the specialization is instantiated.
 
 
 ## Wording
@@ -49,9 +43,13 @@ Modify [basic.types.general]/12 and split into separate paragraphs as follows:
 * [12.2]{.pnum} _cv_ `T`, [pointer to `T`, reference to `T`, or array of `T`,]{.addu} where `T` is a consteval-only type,
 * [a pointer or reference to a consteval-only type,]{.rm}
 * [an array of consteval-only type,]{.rm}
-* [a function type having a return type or any parameter type that is consteval-only,]{.rm}
-* [12.3]{.pnum} a class type with [any]{.rm} [a]{.addu} non-static data member [having]{.rm} [of]{.addu} consteval-only type, or
-* [12.4]{.pnum} a type "pointer to member of class `C` of type `T`", where at least one of `C` or `T` is [a]{.rm} consteval-only [type]{.rm}.
+* [12.3]{.pnum} a function type having a return type or any parameter type that is consteval-only,
+* [12.4]{.pnum} a class type [`C` for which]{.addu} [with any non-static data member having consteval-only type]{.rm}
+  * [[12.4.1]{.pnum} `C` is complete from some point in the program,]{.addu}
+  * [[12.4.2]{.pnum} `C` has a non-static data member whose type is consteval-only, and]{.addu}
+  * [12.4.3]{.pnum} [if `C` is a specialization of a templated class, then `C` is either an explicit specialization or is referenced in manner that requires the complete definition of `C` for a purpose other than determining whether `C` is a consteval-only type]{.addu}, or
+
+* [12.5]{.pnum} a type "pointer to member of class `C` of type `T`", where at least one of `C` or `T` is [a]{.rm} consteval-only [type]{.rm}.
 
 ::: addu
 A type is _observably consteval-only_ from a program point _P_ if it is
@@ -59,12 +57,10 @@ A type is _observably consteval-only_ from a program point _P_ if it is
 * [12.5]{.pnum} `std::meta::info`,
 * [12.6]{.pnum} _cv_ `T`, pointer  to `T`, reference to `T`, or array of `T`, where `T` is observably consteval-only from _P_,
 
-* [12.x]{.pnum} a class type `C` for which
-  * [12.x.2]{.pnum} `C` is complete from _P_,
-  * [12.x.1]{.pnum} `C` has at least one non-static data member whose type is observably consteval-only from _P_, and
-  * [12.x.3]{.pnum} if `C` is a specialization of a templated class for which no declared specialization is reachable from _P_ then either
-    * [12.x.3.1]{.pnum} the reachable definition of `C` appears in a translation unit that is reachable from _P_ or
-    * [12.x.3.1]{.pnum} `C` is referenced at or prior to _P_ in a context that requires the complete definition of `C` for a purpose other than determining whether `C` is an observably consteval-only type.
+* [12.7]{.pnum} a class type `C` for which
+  * [12.7.1]{.pnum} `C` is complete from _P_,
+  * [12.7.2]{.pnum} `C` has a non-static data member whose type is observably consteval-only from _P_, and
+  * [12.7.3]{.pnum} if `C` is a specialization of a templated class for which no declared specialization is reachable from _P_, then `C` is referenced at or prior to _P_ in a context that requires the complete definition of `C` for a purpose other than determining whether `C` is an observably consteval-only type, or
 * [12.8]{.pnum} a type "pointer to member of class `C` of type `T`", where at least one of `C` or `T` is observably consteval-only from _P_.
 
 [Every type which is observably consteval-only from some program point is also consteval-only.]{.note}
@@ -104,13 +100,14 @@ For each declaration _D_ of a variable whose type `T` is consteval-only, one of 
 
 a diagnostic is required only if `T` is observably consteval-only from the end of the definition domain in which _D_ appears.
 
-For each definition _D_ of a function whose parameter is of type `T` that is consteval-only, `T` shall be observably consteval-only from the point following _D_; a diagnostic is only required if `T` is observably consteval-only from the end of the definition domain in which _D_ appears.
+For each definition _D_ of a non-consteval function whose type `T` is consteval-only, `T` shall be observably consteval-only from the point following _D_; a diagnostic is only required if `T` is observably consteval-only from the end of the definition domain in which _D_ appears.
 
 Each potentially-evaluated expression or conversion _E_ of consteval-only type `T` shall be in an immediate function context; a diagnostic is required only if `T` is observably consteval-only from the end of the definition domain in which _E_ appears.
 
-For each manifestly constant-evaluated expression or conversion _E_ whose result has a constituent value or a constituent reference that is, points to, or refers to an object whose complete object is of type `T` that is consteval-only, `T` shall be observably consteval-only from the point following where _E_ appears; a diagnostic is only required if `T` is observably consteval-only from the end of the definition domain in which _E_ appears.
 
 [An expression is immediate-escalating if its type is observably consteval-only from the program point following the expression ([expr.const]).]{.note}
+
+For each manifestly constant-evaluated expression or conversion _E_ whose result has a constituent value or a constituent reference that is, points to, or refers to an object whose complete object is of type `T` that is consteval-only, `T` shall be observably consteval-only from the point following where _E_ appears; a diagnostic is only required if `T` is observably consteval-only from the end of the definition domain in which _E_ appears.
 
 :::
 :::
@@ -159,7 +156,7 @@ Modify [expr.const]/26 as follows:
 [26]{.pnum} An immediate function is a function that is [either]{.addu}
 
 * [26.1]{.pnum} declared with the `consteval` specifier[,]{.rm} [or]{.addu}
-* [26.2]{.pnum} an immediate-escalating function whose [parameter has a]{.addu} type [that]{.addu} is [observably]{.addu} consteval-only ([basic.types.general]) [from the program point
+* [26.2]{.pnum} an immediate-escalating function whose type is [observably]{.addu} consteval-only ([basic.types.general]) [from the program point
   immediately following that function's definition]{.addu}, or
 * [26.3]{.pnum} an immediate-escalating function _F_ whose function body contains either
   * [26.3.1]{.pnum} an immediate-escalating expression or
@@ -174,7 +171,7 @@ Modify [expr.const]/26 as follows:
 Modify [class.virtual]/18 as follows:
 
 ::: std
-[18]{.pnum} A [class with a]{.rm} `consteval` virtual function [that overrides]{.rm} [shall not override]{.addu} a virtual function that is not `consteval` [shall have consteval-only type]{.rm}.
+[18]{.pnum} A class [`C`]{.addu} with a `consteval` virtual function that overrides a virtual function that is not `consteval` shall [have]{.rm} [be observably]{.addu} consteval-only [type]{.rm} [from the point following the definition of `C`]{.addu}. A `consteval` virtual function shall not be overriden by a virtual function that is not consteval.
 
 :::
 
