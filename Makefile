@@ -1,1 +1,1 @@
-include wg21/Makefile
+include ./md/wg21/flat.mk

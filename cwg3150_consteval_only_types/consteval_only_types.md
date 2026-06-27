@@ -6,6 +6,8 @@ audience: EWG, CWG
 author:
     - name: Dan Katz
       email: <katzdm@gmail.com>
+    - name: Wyatt Childers
+      email: <wchilders@nvidia.com>
 toc: true
 status: progress
 tag: reflection
@@ -47,7 +49,7 @@ Modify [basic.types.general]/12 and split into separate paragraphs as follows:
 * [12.4]{.pnum} a class type [`C` for which]{.addu} [with any non-static data member having consteval-only type]{.rm}
   * [[12.4.1]{.pnum} `C` is complete from some point in the program,]{.addu}
   * [[12.4.2]{.pnum} `C` has a non-static data member whose type is consteval-only, and]{.addu}
-  * [12.4.3]{.pnum} [if `C` is a specialization of a templated class, then `C` is either an explicit specialization or is referenced in manner that requires the complete definition of `C` for a purpose other than determining whether `C` is a consteval-only type]{.addu}, or
+  * [12.4.3]{.pnum} [if `C` is a specialization of a templated class, then `C` is either an explicit specialization or is referenced in manner that requires the completeness of `C` for a purpose other than determining whether `C` is a consteval-only type]{.addu}, or
 
 * [12.5]{.pnum} a type "pointer to member of class `C` of type `T`", where at least one of `C` or `T` is [a]{.rm} consteval-only [type]{.rm}.
 
@@ -56,12 +58,12 @@ A type is _observably consteval-only_ from a program point _P_ if it is
 
 * [12.5]{.pnum} `std::meta::info`,
 * [12.6]{.pnum} _cv_ `T`, pointer  to `T`, reference to `T`, or array of `T`, where `T` is observably consteval-only from _P_,
-
-* [12.7]{.pnum} a class type `C` for which
-  * [12.7.1]{.pnum} `C` is complete from _P_,
-  * [12.7.2]{.pnum} `C` has a non-static data member whose type is observably consteval-only from _P_, and
-  * [12.7.3]{.pnum} if `C` is a specialization of a templated class for which no declared specialization is reachable from _P_, then `C` is referenced at or prior to _P_ in a context that requires the complete definition of `C` for a purpose other than determining whether `C` is an observably consteval-only type, or
-* [12.8]{.pnum} a type "pointer to member of class `C` of type `T`", where at least one of `C` or `T` is observably consteval-only from _P_.
+* [12.7]{.pnum} a function type having a return type or any parameter type that is observably consteval-only from _P_,
+* [12.8]{.pnum} a class type `C` for which
+  * [12.8.1]{.pnum} `C` is complete from _P_,
+  * [12.8.2]{.pnum} `C` has a non-static data member whose type is observably consteval-only from _P_, and
+  * [12.8.3]{.pnum} if `C` is a specialization of a templated class for which no declared specialization is reachable from _P_, then `C` is referenced at or prior to _P_ in a context that requires the completeness of `C` for a purpose other than determining whether `C` is an observably consteval-only type, or
+* [12.9]{.pnum} a type "pointer to member of class `C` of type `T`", where at least one of `C` or `T` is observably consteval-only from _P_.
 
 [Every type which is observably consteval-only from some program point is also consteval-only.]{.note}
 
@@ -96,18 +98,18 @@ Every function of consteval-only type shall be an immediate function ([expr.cons
 For each declaration _D_ of a variable whose type `T` is consteval-only, one of the following shall hold:
 
 * [12.9]{.pnum} _D_ is `constexpr`; or
-* [12.10]{.pnum} the lifetime of each object or reference introduced by the variable begins and ends within a manifestly constant-evaluated expression;
+* [12.10]{.pnum} the lifetime of each object or reference introduced by the variable begins and ends within the same manifestly constant-evaluated expression;
 
-a diagnostic is required only if `T` is observably consteval-only from the end of the definition domain in which _D_ appears.
+a diagnostic is required only if `T` is observably consteval-only from the end of the translation unit in which _D_ appears.
 
-For each definition _D_ of a non-consteval function whose type `T` is consteval-only, `T` shall be observably consteval-only from the point following _D_; a diagnostic is only required if `T` is observably consteval-only from the end of the definition domain in which _D_ appears.
+For each definition _D_ of a non-consteval function whose type `T` is consteval-only, `T` shall be observably consteval-only from the point following _D_; a diagnostic is only required if `T` is observably consteval-only from the end of the translation unit in which _D_ appears.
 
-Each potentially-evaluated expression or conversion _E_ of consteval-only type `T` shall be in an immediate function context; a diagnostic is required only if `T` is observably consteval-only from the end of the definition domain in which _E_ appears.
+Each potentially-evaluated expression or conversion _E_ of consteval-only type `T` shall be in an immediate function context; a diagnostic is required only if `T` is observably consteval-only from the end of the translation unit in which _E_ appears.
 
 
 [An expression is immediate-escalating if its type is observably consteval-only from the program point following the expression ([expr.const]).]{.note}
 
-For each manifestly constant-evaluated expression or conversion _E_ whose result has a constituent value or a constituent reference that is, points to, or refers to an object whose complete object is of type `T` that is consteval-only, `T` shall be observably consteval-only from the point following where _E_ appears; a diagnostic is only required if `T` is observably consteval-only from the end of the definition domain in which _E_ appears.
+For each manifestly constant-evaluated expression or conversion _E_ whose result has a constituent value or a constituent reference that is, points to, or refers to an object whose complete object is of type `T` that is consteval-only, `T` shall be observably consteval-only from the point following where _E_ appears; a diagnostic is only required if `T` is observably consteval-only from the end of the translation unit in which _E_ appears.
 
 :::
 :::
