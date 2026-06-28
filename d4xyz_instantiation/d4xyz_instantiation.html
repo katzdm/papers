@@ -575,17 +575,17 @@ instantiation</em> of a specialization
 <code class="sourceCode cpp"><em>S</em></code> in a translation unit
 <code class="sourceCode cpp"><em>U</em></code> is a (possibly empty) set
 of program points in <code class="sourceCode cpp"><em>U</em></code>, the
-composition of which is specified below. A candidate point of
-instantiation of <code class="sourceCode cpp"><em>S</em></code> in
-<code class="sourceCode cpp"><em>U</em></code> (call it
-<code class="sourceCode cpp"><em>P</em></code>) is an <em>allowed point
-of instantiation</em> if there is no candidate point of instantiation
-for <code class="sourceCode cpp"><em>S</em></code> in
+composition of which is specified below. A candidate point
+<code class="sourceCode cpp"><em>P</em></code> of instantiation of
+<code class="sourceCode cpp"><em>S</em></code> in
+<code class="sourceCode cpp"><em>U</em></code> is an <em>allowed point
+of instantiation</em> if there is no candidate point of instantiation of
+<code class="sourceCode cpp"><em>S</em></code> in
 <code class="sourceCode cpp"><em>U</em></code> that is specified to be
 <em>eager</em> (see below) which precedes
 <code class="sourceCode cpp"><em>P</em></code>.</p>
-<p><span class="marginalizedparent"><a href="#pnum-2" id="pnum-2" class="marginalized">2</a></span> For a specialization
-<code class="sourceCode cpp"><em>S</em></code> that has at least one
+<p><span class="marginalizedparent"><a href="#pnum-2" id="pnum-2" class="marginalized">2</a></span> If a specialization
+<code class="sourceCode cpp"><em>S</em></code> has at least one
 candidate point of instantiation in
 <code class="sourceCode cpp"><em>U</em></code>, one of its allowed
 points of instantiation in
@@ -599,8 +599,8 @@ target scope of the primary template of
 of the points of instantiation of
 <code class="sourceCode cpp"><em>S</em></code>. If the definitions of
 <code class="sourceCode cpp"><em>S</em></code> that would be
-instantiated from each such allowed point of instantiation are not
-equivalent according to the one-definition rule (<a href="https://eel.is/c++draft/basic.def.odr" title="6.3 One-definition rule">[basic.def.odr]</a>), the program is
+instantiated from each allowed point of instantiation are not equivalent
+according to the one-definition rule (<a href="https://eel.is/c++draft/basic.def.odr" title="6.3 One-definition rule">[basic.def.odr]</a>), the program is
 ill-formed, no diagnostic required.</p>
 <p><span class="marginalizedparent"><a href="#pnum-3" id="pnum-3" class="marginalized">3</a></span> Letting
 <code class="sourceCode cpp"><em>S</em></code> be a specialization, or a
@@ -641,7 +641,7 @@ instantiation immediately following each candidate point of
 instantiation of <code class="sourceCode cpp"><em>C</em></code>.</p>
 <p><span class="marginalizedparent"><a href="#pnum-12" id="pnum-12" class="marginalized">5</a></span> The point immediately following an
 explicit instantiation definition is a candidate point of instantiation
-for the specialization <code class="sourceCode cpp"><em>S</em></code>
+of the specialization <code class="sourceCode cpp"><em>S</em></code>
 specified by the explicit instantiation. This candidate point of
 instantiation is eager if</p>
 <ul>
@@ -657,8 +657,8 @@ templated variable whose type contains a placeholder type.</li>
 </ul>
 <p><span class="marginalizedparent"><a href="#pnum-16" id="pnum-16" class="marginalized">6</a></span> The point immediately at the end of a
 definition domain (<a href="https://eel.is/c++draft/basic.def.odr" title="6.3 One-definition rule">[basic.def.odr]</a>) is a candidate
-point of instantiation for each specialization that has a candidate
-point of instantiation within the definition domain.</p>
+point of instantiation of each specialization that has a candidate point
+of instantiation within the definition domain.</p>
 <p><span class="marginalizedparent"><a href="#pnum-17" id="pnum-17" class="marginalized">7</a></span> If the evaluation of a manifestly
 constant-evaluated expression, or the determination of whether an
 expression is manifestly constant-evaluated, requires a specialization
@@ -688,7 +688,7 @@ are candidate points of instantiation of the
 <code class="sourceCode cpp"><em>S</em></code>, the point immediately
 following the namespace-scope declaration that constains
 <code class="sourceCode cpp"><em>S</em></code> is a candidate point of
-instantiation for the
+instantiation of the
 <code class="sourceCode cpp"><em>compound-statement</em></code> of
 <code class="sourceCode cpp"><em>S</em></code>.</p>
 </div>
