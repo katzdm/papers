@@ -53,7 +53,7 @@ Replace [temp.point] with the following:
 - [#.#]{.pnum} `$S$` is not a declared specialization from `$P$` and
 - [#.#]{.pnum} the template definition from which the definition of `$S$` would be instantiated is reachable from `$P$`.
 
-[#]{.pnum} For an `$expansion-statement$` `$S$` ([stmt.expand]) enclosed by a specialization `$X$` of a templated entity, the point of instantiation of `$X$` is a candidate point of instantiation of the `$compound-statement$` of `$S$`. For any other such `$expansion-statement$` `$S$`, the point immediately following the namespace-scope declaration that constains `$S$` is a candidate point of instantiation for the `$compound-statement$` of `$S$`.
+[#]{.pnum} For an `$expansion-statement$` `$S$` ([stmt.expand]) enclosed by a specialization, the candidate points of instantiation of the innermost specialization enclosing `$S$` are candidate points of instantiation of the `$compound-statement$` of `$S$`. For any other such `$expansion-statement$` `$S$`, the point immediately following the namespace-scope declaration that constains `$S$` is a candidate point of instantiation for the `$compound-statement$` of `$S$`.
 
 :::
 

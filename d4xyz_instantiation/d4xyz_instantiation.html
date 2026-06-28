@@ -672,10 +672,9 @@ be instantiated is reachable from
 <p><span class="marginalizedparent"><a href="#pnum-20" id="pnum-20" class="marginalized">8</a></span> For an
 <code class="sourceCode cpp"><em>expansion-statement</em></code>
 <code class="sourceCode cpp"><em>S</em></code> (<a href="https://eel.is/c++draft/stmt.expand" title="8.7 Expansion statements">[stmt.expand]</a>) enclosed by a
-specialization <code class="sourceCode cpp"><em>X</em></code> of a
-templated entity, the point of instantiation of
-<code class="sourceCode cpp"><em>X</em></code> is a candidate point of
-instantiation of the
+specialization, the candidate points of instantiation of the innermost
+specialization enclosing <code class="sourceCode cpp"><em>S</em></code>
+are candidate points of instantiation of the
 <code class="sourceCode cpp"><em>compound-statement</em></code> of
 <code class="sourceCode cpp"><em>S</em></code>. For any other such
 <code class="sourceCode cpp"><em>expansion-statement</em></code>
