@@ -629,7 +629,7 @@ function whose return type is deduced, or</li>
 point of instantiation of
 <code class="sourceCode cpp"><em>S</em></code>;</p></li>
 <li><p><span class="marginalizedparent"><a href="#pnum-10" id="pnum-10" class="marginalized">(3.3)</a></span> otherwise, the point immediately
-following the namespace-scope declaration that contains
+following the innermost namespace-scope declaration that contains
 <code class="sourceCode cpp"><em>R</em></code> is a candidate point of
 instantiation of
 <code class="sourceCode cpp"><em>S</em></code>.</p></li>
@@ -686,7 +686,7 @@ are candidate points of instantiation of the
 <code class="sourceCode cpp"><em>S</em></code>. For any other such
 <code class="sourceCode cpp"><em>expansion-statement</em></code>
 <code class="sourceCode cpp"><em>S</em></code>, the point immediately
-following the namespace-scope declaration that constains
+following the innermost namespace-scope declaration that constains
 <code class="sourceCode cpp"><em>S</em></code> is a candidate point of
 instantiation of the
 <code class="sourceCode cpp"><em>compound-statement</em></code> of
@@ -712,11 +712,11 @@ namespace scope, then
 <code class="sourceCode default cpp"><em>P</em></code>.</ins></span></li>
 <li><span class="add" style="color: #006e28"><ins><span class="marginalizedparent"><a href="#pnum-23" id="pnum-23" class="marginalized">(3.2)</a></span> Otherwise, if
 <code class="sourceCode default cpp"><em>P</em></code> is an eager point
-of instantiation, then the point immediately before the namespace-scope
-declaration enclosing
+of instantiation, then the point immediately before the innermost
+namespace-scope declaration enclosing
 <code class="sourceCode default cpp"><em>P</em></code>.</ins></span></li>
 <li><span class="add" style="color: #006e28"><ins><span class="marginalizedparent"><a href="#pnum-24" id="pnum-24" class="marginalized">(3.3)</a></span> Otherwise, the point immediately
-after the namespace-scope declaration enclosing
+after the innermost namespace-scope declaration enclosing
 <code class="sourceCode default cpp"><em>P</em></code>.</ins></span></li>
 </ul>
 </div>

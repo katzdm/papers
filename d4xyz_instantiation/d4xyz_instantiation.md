@@ -35,7 +35,7 @@ Replace [temp.point] with the following:
 
   `$R$` is an eager candidate point of instantiation of `$S$`;
 
-- [#.#]{.pnum} otherwise, the point immediately following the namespace-scope declaration that contains `$R$` is a candidate point of instantiation of `$S$`.
+- [#.#]{.pnum} otherwise, the point immediately following the innermost namespace-scope declaration that contains `$R$` is a candidate point of instantiation of `$S$`.
 
 [#]{.pnum} A virtual member function of a specialization of a templated class `$C$` has a candidate point of instantiation immediately following each candidate point of instantiation of `$C$`.
 
@@ -52,7 +52,7 @@ Replace [temp.point] with the following:
 - [#.#]{.pnum} `$S$` is not a declared specialization from `$P$` and
 - [#.#]{.pnum} the template definition from which the definition of `$S$` would be instantiated is reachable from `$P$`.
 
-[#]{.pnum} For an `$expansion-statement$` `$S$` ([stmt.expand]) enclosed by a specialization, the candidate points of instantiation of the innermost specialization enclosing `$S$` are candidate points of instantiation of the `$compound-statement$` of `$S$`. For any other such `$expansion-statement$` `$S$`, the point immediately following the namespace-scope declaration that constains `$S$` is a candidate point of instantiation of the `$compound-statement$` of `$S$`.
+[#]{.pnum} For an `$expansion-statement$` `$S$` ([stmt.expand]) enclosed by a specialization, the candidate points of instantiation of the innermost specialization enclosing `$S$` are candidate points of instantiation of the `$compound-statement$` of `$S$`. For any other such `$expansion-statement$` `$S$`, the point immediately following the innermost namespace-scope declaration that constains `$S$` is a candidate point of instantiation of the `$compound-statement$` of `$S$`.
 
 :::
 
@@ -64,8 +64,8 @@ Modify [module.context]/3 as follows:
 [3]{.pnum} During the instantiation of any other template specialization `$S$` [in a translation unit `$U$` whose point of instantiation in `$U$` is `$P$`]{.add}, the instantiation context contains [the point of instantiation of the template.]{.rm} [the following program point:]{.add}
 
 - [[#.#]{.pnum} if `$P$` is a point at a namespace scope, then `$P$`.]{.add}
-- [[#.#]{.pnum} Otherwise, if `$P$` is an eager point of instantiation, then the point immediately before the namespace-scope declaration enclosing `$P$`.]{.add}
-- [[#.#]{.pnum} Otherwise, the point immediately after the namespace-scope declaration enclosing `$P$`.]{.add}
+- [[#.#]{.pnum} Otherwise, if `$P$` is an eager point of instantiation, then the point immediately before the innermost namespace-scope declaration enclosing `$P$`.]{.add}
+- [[#.#]{.pnum} Otherwise, the point immediately after the innermost namespace-scope declaration enclosing `$P$`.]{.add}
 
 :::
 
