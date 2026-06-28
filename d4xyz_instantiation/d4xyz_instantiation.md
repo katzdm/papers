@@ -20,7 +20,7 @@ tag: templates
 Replace [temp.point] with the following:
 
 ::: wording
-[#]{.pnum} The _candidate points of instantiation_ of a specialization `$S$` in a translation unit `$U$` is a (possibly empty) set of program points in `$U$`, the composition of which is specified below. A candidate point `$P$` of instantiation of `$S$` in `$U$` is an _allowed point of instantiation_ if there is no candidate point of instantiation of `$S$` in `$U$` that is specified to be _eager_ (see below) which precedes `$P$`.
+[#]{.pnum} The _candidate points of instantiation_ of a specialization `$S$` in a translation unit `$U$` is a (possibly empty) set of program points in `$U$`, the composition of which is specified below. A candidate point `$P$` of instantiation of `$S$` in `$U$` is an _allowed point of instantiation_ if there is no candidate point of instantiation of `$S$` in `$U$` that is specified to be eager (see below) which precedes `$P$`.
 
 [#]{.pnum} If a specialization `$S$` has at least one candidate point of instantiation in `$U$`, one of its allowed points of instantiation in `$U$` is the _point of instantiation_ of `$S$` in `$U$`; the manner in which the point of instantiation is chosen is unspecified. A definition of `$S$` whose target scope is the target scope of the primary template of `$S$` is instantiated at each of the points of instantiation of `$S$`. If the definitions of `$S$` that would be instantiated from each allowed point of instantiation are not equivalent according to the one-definition rule ([basic.def.odr]), the program is ill-formed, no diagnostic required.
 
