@@ -13,8 +13,8 @@ tag: templates
 
 ## Wording
 - TODO: Fold determination of when implicit instantiation takes place (from [temp.inst]) into this section?
-- TODO: State explicitly that a definition is instantiated in each TU that has a point of instantiation?
 - TODO: Does CWG3065 fuck anything up if the point of instantiation is at block scope?
+  - Generally: Figure out which target _and_ inhabited scopes these things should have.
 
 ### [temp.point]
 Replace [temp.point] with the following:
@@ -22,8 +22,7 @@ Replace [temp.point] with the following:
 ::: wording
 [#]{.pnum} The _candidate points of instantiation_ of a specialization `$S$` in a translation unit `$U$` is a (possibly empty) set of program points in `$U$`, the composition of which is specified below. A candidate point of instantiation of `$S$` in `$U$` (call it `$P$`) is an _allowed point of instantiation_ if there is no candidate point of instantiation for `$S$` in `$U$` that is specified to be _eager_ (see below) which precedes `$P$`.
 
-[#]{.pnum} For a specialization `$S$` that has at least one candidate point of instantiation in `$U$`, one of its allowed points of instantiation in `$U$` is the _point of instantiation_ of `$S$` in `$U$`; the manner in which the point of instantiation is chosen is unspecified. If the hypothetical definitions of `$S$` that would be instantiated from each such allowed point of instantiation are not equivalent according to the one-definition rule ([basic.def.odr]), the program is ill-formed, no diagnostic required.
-
+[#]{.pnum} For a specialization `$S$` that has at least one candidate point of instantiation in `$U$`, one of its allowed points of instantiation in `$U$` is the _point of instantiation_ of `$S$` in `$U$`; the manner in which the point of instantiation is chosen is unspecified. A definition of `$S$` whose target scope is the target scope of the primary template of `$S$` is instantiated at each of the points of instantiation of `$S$`. If the definitions of `$S$` that would be instantiated from each such allowed point of instantiation are not equivalent according to the one-definition rule ([basic.def.odr]), the program is ill-formed, no diagnostic required.
 
 [#]{.pnum} Letting `$S$` be a specialization, or a separately instantiated construct thereof ([temp.decls.general]), whose implicit instantiation is required at a point `$R$` ([temp.inst]),
 

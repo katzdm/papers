@@ -559,10 +559,12 @@ display: none !important;
 <li>TODO: Fold determination of when implicit instantiation takes place
 (from <a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a>) into this
 section?</li>
-<li>TODO: State explicitly that a definition is instantiated in each TU
-that has a point of instantiation?</li>
 <li>TODO: Does CWG3065 fuck anything up if the point of instantiation is
-at block scope?</li>
+at block scope?
+<ul>
+<li>Generally: Figure out which target <em>and</em> inhabited scopes
+these things should have.</li>
+</ul></li>
 </ul>
 <h3 data-number="1.1" id="temp.point"><span class="header-section-number">1.1</span> <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a><a href="#temp.point" class="self-link"></a></h3>
 <p>Replace <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a> with the
@@ -590,9 +592,14 @@ points of instantiation in
 <code class="sourceCode cpp"><em>U</em></code> is the <em>point of
 instantiation</em> of <code class="sourceCode cpp"><em>S</em></code> in
 <code class="sourceCode cpp"><em>U</em></code>; the manner in which the
-point of instantiation is chosen is unspecified. If the hypothetical
-definitions of <code class="sourceCode cpp"><em>S</em></code> that would
-be instantiated from each such allowed point of instantiation are not
+point of instantiation is chosen is unspecified. A definition of
+<code class="sourceCode cpp"><em>S</em></code> whose target scope is the
+target scope of the primary template of
+<code class="sourceCode cpp"><em>S</em></code> is instantiated at each
+of the points of instantiation of
+<code class="sourceCode cpp"><em>S</em></code>. If the definitions of
+<code class="sourceCode cpp"><em>S</em></code> that would be
+instantiated from each such allowed point of instantiation are not
 equivalent according to the one-definition rule (<a href="https://eel.is/c++draft/basic.def.odr" title="6.3 One-definition rule">[basic.def.odr]</a>), the program is
 ill-formed, no diagnostic required.</p>
 <p><span class="marginalizedparent"><a href="#pnum-3" id="pnum-3" class="marginalized">3</a></span> Letting
