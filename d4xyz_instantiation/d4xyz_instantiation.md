@@ -49,7 +49,7 @@ Replace [temp.point] with the following:
 
 [#]{.pnum} The point at the end of a definition domain ([basic.def.odr]) is a candidate point of instantiation of each specialization that has a candidate point of instantiation within the definition domain.
 
-[#]{.pnum} If a specialization `$S$` is required to be defined by
+[#]{.pnum} If a specialization `$S$` is required for
 
 — [#.#]{.pnum} the evaluation of a manifestly constant-evaluated expression or
 — [#.#]{.pnum} the determination of whether an expression is manifestly constant-evaluated ([expr.const.init]),
@@ -61,7 +61,7 @@ then `$S$` has an eager point of instantiation immediately before the point `$P$
 
 [#]{.pnum} The candidate points of instantiation of the `$compound-statement$` of an `$expansion-statement$` `$S$` ([stmt.expand]) are
 
-— [#.#]{.pnum} if `$S$` is enclosed by a specialization, the candidate points of instantiation of the innermost specialization enclosing `$S$`,
+— [#.#]{.pnum} the candidate points of instantiation of the innermost specialization enclosing `$S$`, if `$S$` is enclosed by a specialization,
 — [#.#]{.pnum} otherwise, the point immediately following the innermost namespace-scope declaration that contains `$S$`.
 
 :::
