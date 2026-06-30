@@ -6,6 +6,8 @@ audience: EWG
 author:
     - name: Dan Katz
       email: <katzdm@gmail.com>
+    - name: Vlad Serebrennikov
+      email: <serebrennikov.vladislav@gmail.com>
 toc: true
 status: progress
 tag: templates
@@ -24,7 +26,7 @@ Replace [temp.point] with the following:
 
 [#]{.pnum} If a specialization `$S$` has at least one candidate point of instantiation in `$U$`, one of its allowed points of instantiation in `$U$` is the _point of instantiation_ of `$S$` in `$U$`; the manner in which the point of instantiation is chosen is unspecified. A definition of `$S$` whose target scope is the target scope of the primary template of `$S$` is instantiated at each of the points of instantiation of `$S$`. If the definitions of `$S$` that would be instantiated from each allowed point of instantiation are not equivalent according to the one-definition rule ([basic.def.odr]), the program is ill-formed, no diagnostic required.
 
-[#]{.pnum} Letting `$S$` be a specialization, or a separately instantiated construct thereof ([temp.decls.general]), whose implicit instantiation is required at a point `$R$` ([temp.inst]),
+[#]{.pnum} Letting `$S$` be a specialization or a separately instantiated construct thereof ([temp.decls.general]), whose implicit instantiation is required at a point `$R$` ([temp.inst]),
 
 - [#.#]{.pnum} if `$R$` is enclosed by a specialization, each candidate point of instantiation of the innermost specialization enclosing `$R$` is a candidate point of instantiation of `$S$`;
 - [#.#]{.pnum} otherwise, if `$S$` is
@@ -39,20 +41,28 @@ Replace [temp.point] with the following:
 
 [#]{.pnum} A virtual member function of a specialization of a templated class `$C$` has a candidate point of instantiation immediately following each candidate point of instantiation of `$C$`.
 
-[#]{.pnum} The point immediately following an explicit instantiation definition is a candidate point of instantiation of the specialization `$S$` specified by the explicit instantiation. This candidate point of instantiation is eager if
+[#]{.pnum} The point immediately following an explicit instantiation definition is a candidate point of instantiation of the specialization `$S$` named by the explicit instantiation. This candidate point of instantiation is eager if
 
 - [#.#]{.pnum} `$S$` is a specialization of a templated class,
 - [#.#]{.pnum} `$S$` is a specialization of a templated function whose return type is deduced, or
 - [#.#]{.pnum} `$S$` is a specialization of a templated variable whose type contains a placeholder type.
 
-[#]{.pnum} The point immediately at the end of a definition domain ([basic.def.odr]) is a candidate point of instantiation of each specialization that has a candidate point of instantiation within the definition domain.
+[#]{.pnum} The point at the end of a definition domain ([basic.def.odr]) is a candidate point of instantiation of each specialization that has a candidate point of instantiation within the definition domain.
 
-[#]{.pnum} If the evaluation of a manifestly constant-evaluated expression, or the determination of whether an expression is manifestly constant-evaluated, requires a specialization `$S$` to be defined, `$S$` has an eager point of instantiation immediately before the point at which the expression appears (call it `$P$`) if
+[#]{.pnum} If a specialization `$S$` is required for
+
+— [#.#]{.pnum} the evaluation of a manifestly constant-evaluated expression or
+— [#.#]{.pnum} the determination of whether an expression is manifestly constant-evaluated ([expr.const.init]),
+
+then `$S$` has an eager point of instantiation immediately before the point `$P$` at which the expression appears if
 
 - [#.#]{.pnum} `$S$` is not a declared specialization from `$P$` and
 - [#.#]{.pnum} the template definition from which the definition of `$S$` would be instantiated is reachable from `$P$`.
 
-[#]{.pnum} For an `$expansion-statement$` `$S$` ([stmt.expand]) enclosed by a specialization, the candidate points of instantiation of the innermost specialization enclosing `$S$` are candidate points of instantiation of the `$compound-statement$` of `$S$`. For any other such `$expansion-statement$` `$S$`, the point immediately following the innermost namespace-scope declaration that constains `$S$` is a candidate point of instantiation of the `$compound-statement$` of `$S$`.
+[#]{.pnum} The candidate points of instantiation of the `$compound-statement$` of an `$expansion-statement$` `$S$` ([stmt.expand]) are
+
+— [#.#]{.pnum} the candidate points of instantiation of the innermost specialization enclosing `$S$`, if `$S$` is enclosed by a specialization,
+— [#.#]{.pnum} otherwise, the point immediately following the innermost namespace-scope declaration that contains `$S$`.
 
 :::
 
