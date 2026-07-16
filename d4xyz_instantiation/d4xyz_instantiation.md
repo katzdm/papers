@@ -70,6 +70,22 @@ template<> int B<>::x = 1;              // specialize for T == int
 
 [4]{.pnum} [An instantiated template specialization can be either implicitly instantiated ([temp.inst]) for a given argument list or be explicitly instantiated ([temp.explicit]). A _specialization_ is a class, variable, function, or class member that is either instantiated ([temp.inst]) from a templated entity or is an explicit specialization ([temp.expl.spec]) of a templated entity.]{.rm}
 
+[The following paragraph is relocated from [temp.inst]/1.]{.ednote}
+
+::: add
+[\*]{.pnum} A specialization `$E$` is a _declared specialization_ from a point `$P$` if a declaration for `$E$` that is reachable from `$P$` is
+
+- [#.#]{.pnum} an explicit instantiation definition ([temp.explicit]),
+- [#.#]{.pnum} an explicit specialization declaration ([temp.expl.spec]), or
+- [#.#]{.pnum} an explicit instantiation declaration and for which `$E$` is not
+  - [#.#.#]{.pnum} an inline function,
+  - [#.#.#]{.pnum} a function or variable whose type is deduced from its initializer or return value ([dcl.spec.auto]),
+  - [#.#.#]{.pnum} a potentially-constant variable ([expr.const.init]), or
+  - [#.#.#]{.pnum} a class.
+
+[An implicit instantiation in an importing translation unit cannot use names with internal linkage from an imported translation unit ([basic.link]).]{.note}
+
+:::
 :::
 
 Make p7 a note (normative wording not needed since specializations are distinct entities):
@@ -91,27 +107,25 @@ Modify p8 to focus on semantics rather than syntax:
 Replace as follows:
 
 ::: wording
-[1]{.pnum} A [template]{.rm} specialization `$E$` is a _declared specialization_ [from a point `$P$`]{.add} if [there is]{.rm} a [declaration for `$E$` that is]{.addu} reachable [from `$P$` is]{.add}
 
-- [#.#]{.pnum} [an]{.add} explicit instantiation definition ([temp.explicit]) [or]{.rm}
-- [#.#]{.pnum} [an]{.add} explicit specialization declaration ([temp.expl.spec]) [for `$E$`]{.rm}, or
-- [#.#]{.pnum} [if there is a reachable]{.rm} [an]{.add} explicit instantiation declaration [for `$E$`]{.rm} [and]{.rm} [for which]{.add} `$E$` is not
-  - [#.#.#]{.pnum} an inline function,
-  - [#.#.#]{.pnum} [declared with a]{.rm} [a function or variable whose]{.add} type [is]{.add} deduced from its initializer or return value ([dcl.spec.auto]),
-  - [#.#.#]{.pnum} a potentially-constant variable ([expr.const.init]), or
-  - [#.#.#]{.pnum} a [specialization of a templated]{.rm} class.
+[The following paragraph is moved to [temp.spec.general].]{.ednote}
+
+::: rm
+[1]{.pnum} A template specialization `$E$` is a _declared specialization_ if there is a reachable explicit instantiation definition ([temp.explicit]) or explicit specialization declaration ([temp.expl.spec]) for `$E$`, or if there is a reachable explicit instantiation declaration for `$E$` and `$E$` is not
+  - [#.#]{.pnum} an inline function,
+  - [#.#]{.pnum} declared with a type deduced from its initializer or return value ([dcl.spec.auto]),
+  - [#.#]{.pnum} a potentially-constant variable ([expr.const.init]), or
+  - [#.#]{.pnum} a specialization of a templated class.
 
 [An implicit instantiation in an importing translation unit cannot use names with internal linkage from an imported translation unit ([basic.link]).]{.note}
 
-[2]{.pnum} [Unless a class template specialization is a declared specialization, the class template specialization is implicitly instantiated when the specialization is referenced in a context that requires a completely-defined object type or when the completeness of the class type affects the semantics of the program.]{.rm} [Let `$S$` be]{.add} a specialization of a templated class referred to from a point `$P$` in a translation unit `$U$` such that either
+:::
 
-- the context in which `$S$` is referenced requires a completely-defined object type or
-- the completeness of `$S$` affects the semantics of the program.
+[2]{.pnum} [Unless a class template specialization is a declared specialization, the class template specialization is implicitly instantiated when the specialization is referenced in a context that requires a completely-defined object type or when the completeness of the class type affects the semantics of the program.]{.rm}
 
-If `$S$` is not a declared specialization from `$P$`, then an implicitly instantiated definition of `$S$` shall appear at the point of instantiation of `$S$` in `$U$` ([temp.point]).
+[[In particular, if the semantics of an expression depend on the member or base class lists of a class template specialization, the class template specialization is implicitly generated. For instance, deleting a pointer to class type depends on whether or not the class declares a destructor, and a conversion between pointers to class type depends on the inheritance relationship between the two classes involved.]{.note}]{.rm}
 
-[In particular, if the semantics of an expression depend on the member or base class lists of a class template specialization, the class template specialization is implicitly generated. For instance, deleting a pointer to class type depends on whether or not the class declares a destructor, and a conversion between pointers to class type depends on the inheritance relationship between the two classes involved.]{.note}
-
+::: rm
 ::: example
 ```cpp
 template<class T> class B { /* ... */ };
@@ -127,8 +141,11 @@ void g(D<int>* p, D<char>* pp, D<double>* ppp) {
 }
 ```
 :::
+:::
 
-If the template selected for the specialization ([temp.spec.partial.match]) has been declared, but not defined, at the point of instantiation ([temp.point]), the instantiation yields an incomplete class type ([basic.types.general]).
+[If the template selected for the specialization ([temp.spec.partial.match]) has been declared, but not defined, at the point of instantiation ([temp.point]), the instantiation yields an incomplete class type ([basic.types.general]).]{.rm}
+
+[A non-defining instantiated declaration of a specialization `$S$` appears at each declarative point of instantiation of `$S$` ([temp.point]). An instantiated definition of `$S$` appears at each defining point of instantiation of `$S$` ([temp.point]).]{.add}
 
 :::
 
@@ -137,16 +154,34 @@ If the template selected for the specialization ([temp.spec.partial.match]) has 
 ### [temp.point]
 Replace [temp.point] with the following:
 
+::: draftnote
+The general shape of this machinery is as follows:
+
+- _Candidate points of instantiation_ are those from which a (not necessarily defining) instantiated declaration of a specialization is allowed to appear.
+- _Declarative points of of instantiation_ are those candidate points of instantiation at which non-defining instantiated declarations of a specialization appear.
+- _Defining candidate points of instantiation_  are those candidate points from which an instantiated definition of a specialization is, in the absence of further constraints, allowed to appear.
+- _Eager candidate points of instantiation_ impose additional constraints: An instantiated definition appears no further in the TU than this point.
+- _Allowed points of instantiation_ are those defining candidate points of instantiation from which an instantiated definition of a specialization is allowed to appear, taking all constraints into account. ODR restrictions apply to these points.
+- _Defining points of instantiation_ are those allowed points of instantiation at which instantiated definitions of a specialization appear.
+
+The "outputs" of this section are the "declarative points of instantiation" and the "defining points of instantiation" of a specialization. [temp.inst] then asserts that a non-defining instantiated declaration appears at each declarative points of instantion, and an instantiated definition appears at each defining point of instantiation.
+:::
+
 ::: wording
 [#]{.pnum} The _candidate points of instantiation_ for a specialization `$S$` in a translation unit `$U$` is a (possibly empty) set of program points in `$U$`, the composition of which is specified below.
 
-[#]{.pnum} A translation unit `$U$` contains an instantiated declaration of a specialization `$S$` if and only if the set of candidate points of instantiation of `$S$` in `$U$` is non-empty. Within such a translation unit, a non-defining instantiated declaration of `$S$` appears at the first candidate point of instantiation of `$S$` in `$U$`. The translation unit `$U$` may contain other non-defining instantiated declarations of `$S$`; each such declaration shall appear at a candidate point of instantiation of `$S$` in `$U$`.
+[#]{.pnum} A subset of the candidate points of instantiation of a specialization `$S$` in a translation unit `$U$` are _declarative points of instantiation_. The first candidate point of instantiation of `$S$` in `$U$` (if any) is a declarative point of instantiation; it is unspecified whether `$U$` contains other declarative points of instantiation.
 
-[#]{.pnum} A candidate point of instantiation `$P$` for `$S$` in `$U$` that is specified as defining (see below) is an _allowed point of instantiation_ if there is no defining candidate point of instantiation for `$S$` in `$U$` that is specified to be eager (see below) which precedes `$P$`.
+[A non-defining instantiated declaration of `$S$` appears at each declarative point of instantiation of `$S$` ([temp.inst]).]{.note}
+
+[#]{.pnum} A candidate point of instantiation `$P$` for `$S$` in `$U$` that is specified as defining (see below) is an _allowed point of instantiation_ if
+
+- [#.#]{.pnum} there is no defining candidate point of instantiation for `$S$` in `$U$` that is specified to be eager (see below) which precedes `$P$` and
+- [#.#]{.pnum} `$S$` is not a declared specialization from `$P$` ([temp.inst]).
 
 [#]{.pnum} A specialization `$S$` of a templated entity `$T$` is _instantiated from_ a translation unit `$U$` if a definition of `$T$` is reachable from one of the allowed points of instantiation of `$S$` in `$U$`. A definition of `$T$` shall be reachable from each allowed point of instantiation of `$S$` in each translation unit from which `$S$` is instantiated, no diagnostic is required. Given two allowed points of instantiation of `$S$` in translation units from which `$S$` is instantiated, the hypothetical definitions of `$S$` that would be synthesized at each such point shall be equivalent according to the one-definition rule ([basic.def.odr]), no diagnostic is required.
 
-[#]{.pnum} In each translation unit `$U$` from which a specialization `$S$` is instantiated, an unspecified allowed point of instantiation of `$S$` in `$U$` is a _point of instantiation_ of `$S$`. A translation unit contains at most one point of instantiation of a specialization.
+[#]{.pnum} In each translation unit `$U$` from which a specialization `$S$` is instantiated, an unspecified allowed point of instantiation of `$S$` in `$U$` is a _defining point of instantiation_ of `$S$`. A translation unit contains at most one defining point of instantiation of a specialization.
 
 [#]{.pnum} Letting `$S$` be a specialization, or a separately instantiated construct thereof ([temp.decls.general]), whose implicit instantiation is required from a point `$R$` ([temp.inst]),
 
