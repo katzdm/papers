@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2026-06-28" />
+  <meta name="dcterms.date" content="2026-07-16" />
   <title>Instantiation</title>
   <style>
 
@@ -523,7 +523,7 @@ display: none !important;
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2026-06-28</td>
+    <td>2026-07-16</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -549,16 +549,16 @@ display: none !important;
 <ul>
 <li><a href="#wording" id="toc-wording"><span class="toc-section-number">1</span> Wording</a>
 <ul>
-<li><a href="#temp.point" id="toc-temp.point"><span class="toc-section-number">1.1</span> [temp.point]</a></li>
-<li><a href="#module.context" id="toc-module.context"><span class="toc-section-number">1.2</span> [module.context]</a></li>
+<li><a href="#temp.decls.general" id="toc-temp.decls.general"><span class="toc-section-number">1.1</span> [temp.decls.general]</a></li>
+<li><a href="#temp.spec.general" id="toc-temp.spec.general"><span class="toc-section-number">1.2</span> [temp.spec.general]</a></li>
+<li><a href="#temp.inst" id="toc-temp.inst"><span class="toc-section-number">1.3</span> [temp.inst]</a></li>
+<li><a href="#temp.point" id="toc-temp.point"><span class="toc-section-number">1.4</span> [temp.point]</a></li>
+<li><a href="#module.context" id="toc-module.context"><span class="toc-section-number">1.5</span> [module.context]</a></li>
 </ul></li>
 </ul>
 </div>
 <h2 data-number="1" id="wording"><span class="header-section-number">1</span> Wording<a href="#wording" class="self-link"></a></h2>
 <ul>
-<li>TODO: Fold determination of when implicit instantiation takes place
-(from <a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a>) into this
-section?</li>
 <li>TODO: Does CWG3065 fuck anything up if the point of instantiation is
 at block scope?
 <ul>
@@ -566,100 +566,360 @@ at block scope?
 these things should have.</li>
 </ul></li>
 </ul>
-<h3 data-number="1.1" id="temp.point"><span class="header-section-number">1.1</span> <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a><a href="#temp.point" class="self-link"></a></h3>
+<h3 data-number="1.1" id="temp.decls.general"><span class="header-section-number">1.1</span> <a href="https://eel.is/c++draft/temp.decls.general" title="13.7.1 General">[temp.decls.general]</a><a href="#temp.decls.general" class="self-link"></a></h3>
+<p>Modify paragraph 3 as follows:</p>
+<div class="wording">
+<p><span class="marginalizedparent"><a href="#pnum-1" id="pnum-1" class="marginalized">3</a></span> A separately instantiated construct of
+a templated function <code class="sourceCode cpp">F</code> is <span class="rm" style="color: #bf0303"><del>a</del></span></p>
+<ul>
+<li><span class="marginalizedparent"><a href="#pnum-2" id="pnum-2" class="marginalized">(3.1)</a></span> <span class="add" style="color: #006e28"><ins>a</ins></span> default argument,</li>
+<li><span class="marginalizedparent"><a href="#pnum-3" id="pnum-3" class="marginalized">(3.2)</a></span> <span class="add" style="color: #006e28"><ins>a</ins></span>
+<code class="sourceCode cpp"><em>noexcept-specifier</em></code>, or</li>
+<li><span class="marginalizedparent"><a href="#pnum-4" id="pnum-4" class="marginalized">(3.3)</a></span> <span class="add" style="color: #006e28"><ins>a</ins></span>
+<code class="sourceCode cpp"><em>function-contract-specifier</em></code></li>
+</ul>
+<p>of <code class="sourceCode cpp">F</code>. For purposes of name lookup
+and instantiation, separately instantiated constructs,
+<code class="sourceCode cpp"><em>type-constraint</em></code>s, <span class="rm" style="color: #bf0303"><del>and</del></span>
+<code class="sourceCode cpp"><em>requires-clause</em></code>s (<a href="https://eel.is/c++draft/temp.pre" title="13.1 Preamble">[temp.pre]</a>)<span class="add" style="color: #006e28"><ins>, and default template
+arguemnts</ins></span> are considered definitions; each separately
+instantiated construct,
+<code class="sourceCode cpp"><em>type-constraint</em></code>, <span class="rm" style="color: #bf0303"><del>or</del></span>
+<code class="sourceCode cpp"><em>requires-clause</em></code><span class="add" style="color: #006e28"><ins>, or default template
+argument</ins></span> is a separate definition which is unrelated to the
+templated function definition or to any other separately instantiated
+constructs,
+<code class="sourceCode cpp"><em>type-constraint</em></code>s, <span class="rm" style="color: #bf0303"><del>or</del></span>
+<code class="sourceCode cpp"><em>requires-clause</em></code>s<span class="add" style="color: #006e28"><ins>, or default template
+arguments</ins></span>. For the purpose of instantiation, the
+substatements of a constexpr if statement (<a href="https://eel.is/c++draft/stmt.if" title="8.5.2 The if statement">[stmt.if]</a>) are considered
+definitions. For the purpose of name lookup and instantiation, the
+<code class="sourceCode cpp"><em>compound-statement</em></code> of an
+<code class="sourceCode cpp"><em>expansion-statement</em></code> is
+considered a template definition.</p>
+</div>
+<h3 data-number="1.2" id="temp.spec.general"><span class="header-section-number">1.2</span> <a href="https://eel.is/c++draft/temp.spec.general" title="13.9.1 General">[temp.spec.general]</a><a href="#temp.spec.general" class="self-link"></a></h3>
+<p>Modify as far as p4 as follows:</p>
+<div class="wording">
+<p><span class="marginalizedparent"><a href="#pnum-5" id="pnum-5" class="marginalized">*</a></span> <span class="add" style="color: #006e28"><ins>An entity
+<code class="sourceCode default cpp"><em>E</em></code> is a <em>template
+specialization</em> if there exists a template
+<code class="sourceCode default cpp">T</code> and a template argument
+list <code class="sourceCode default cpp">Args...</code> such that
+<code class="sourceCode default cpp">T&lt;Args...&gt;</code> names
+<code class="sourceCode default cpp"><em>E</em></code>. A
+<em>specialization</em> is either a template specialization or a member
+of a template specialization.</ins></span></p>
+<p><span class="marginalizedparent"><a href="#pnum-6" id="pnum-6" class="marginalized">1</a></span> <span class="add" style="color: #006e28"><ins>Declarations of specializations can either
+be provided explicitly or synthesized from declarations of the templated
+entities which they specialize.</ins></span> The act of <span class="rm" style="color: #bf0303"><del>instantiating a function, a variable, a
+class, a member of a class template, or a member template</del></span>
+<span class="add" style="color: #006e28"><ins>synthesizing a declaration
+of a specialization from a declaration of a templated
+entity</ins></span> is referred to as <em>template instantiation</em>.
+<span class="add" style="color: #006e28"><ins>The synthesis of a
+declaration through template instantiation can either be implicit (<a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a>) or explicit (<a href="https://eel.is/c++draft/temp.explicit" title="13.9.3 Explicit instantiation">[temp.explicit]</a>). A
+declaration synthesized through template instantiation is an
+<em>instantiated</em> declaration; an entity whose definition is
+instantiated is called an <em>instantiated</em> entity.</ins></span></p>
+<p><span class="add" style="color: #006e28"><ins><span id="note-1" class="note" data-num="1"><span>[ <em>Note <a href="#note-1">1</a>:</em>
+</span>A synthesized declaration can be (but is not necessarily) a
+definition, and the entity thereby declared can be (but is not
+necessarily) a member of a class.<span> — <em>end note</em>
+]</span></span></ins></span></p>
+<p><span class="marginalizedparent"><a href="#pnum-7" id="pnum-7" class="marginalized">2</a></span> <span class="rm" style="color: #bf0303"><del>A function instantiated from a function
+template is called an instantiated function. A class instantiated from a
+class template is called an instantiated class. A member function, a
+member class, a member enumeration, or a static data member of a class
+template instantiated from the member definition of the class template
+is called, respectively, an instantiated member function, member class,
+member enumeration, or static data member. A member function
+instantiated from a member function template is called an instantiated
+member function. A member class instantiated from a member class
+template is called an instantiated member class. A variable instantiated
+from a variable template is called an instantiated variable. A static
+data member instantiated from a static data member template is called an
+instantiated static data member.</del></span></p>
+<p><span class="ednote" style="color: #0000ff">[ Editor&#39;s note: p3 is
+moved into <a href="https://eel.is/c++draft/temp.expl.spec" title="13.9.4 Explicit specialization">[temp.expl.spec]</a> ]</span></p>
+<p><span class="marginalizedparent"><a href="#pnum-8" id="pnum-8" class="marginalized">3</a></span> <span class="rm" style="color: #bf0303"><del>An explicit specialization may be declared
+for a function template, a variable template, a class template, a member
+of a class template, or a member template. An explicit specialization
+declaration is introduced by
+<code class="sourceCode default cpp">template&lt;&gt;</code>. In an
+explicit specialization declaration for a variable template, a class
+template, a member of a class template, or a class member template, the
+variable or class that is explicitly specialized shall be specified with
+a
+<code class="sourceCode default cpp"><em>simple-template-id</em></code>.
+In the explicit specialization declaration for a function template, the
+function explicitly specialized may be specified using a
+<code class="sourceCode default cpp"><em>template-id</em></code>.</del></span></p>
+<div class="rm" style="color: #bf0303">
+
+<div id="example-1" class="example" data-num="1">
+<span>[ <em>Example <a href="#example-1">1</a>:</em> </span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>template&lt;class T = int&gt; struct A {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  static int x;</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>};</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>template&lt;class U&gt; void g(U) { }</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; struct A&lt;double&gt; { };        // specialize for T == double</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; struct A&lt;&gt; { };              // specialize for T == int</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; void g(char) { }             // specialize for U == char</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                                        // U is deduced from the parameter type</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; void g&lt;int&gt;(int) { }         // specialize for U == int</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; int A&lt;char&gt;::x = 0;          // specialize for T == char</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>template&lt;class T = int&gt; struct B {</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  static int x;</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>};</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; int B&lt;&gt;::x = 1;              // specialize for T == int</span></code></pre></div>
+<span> — <em>end example</em> ]</span>
+</div>
+
+</div>
+<p><span class="marginalizedparent"><a href="#pnum-9" id="pnum-9" class="marginalized">4</a></span> <span class="rm" style="color: #bf0303"><del>An instantiated template specialization can
+be either implicitly instantiated (<a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a>) for a given
+argument list or be explicitly instantiated (<a href="https://eel.is/c++draft/temp.explicit" title="13.9.3 Explicit instantiation">[temp.explicit]</a>). A
+<em>specialization</em> is a class, variable, function, or class member
+that is either instantiated (<a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a>) from a templated
+entity or is an explicit specialization (<a href="https://eel.is/c++draft/temp.expl.spec" title="13.9.4 Explicit specialization">[temp.expl.spec]</a>) of a
+templated entity.</del></span></p>
+</div>
+<p>Make p7 a note (normative wording not needed since specializations
+are distinct entities):</p>
+<div class="wording">
+<p><span class="marginalizedparent"><a href="#pnum-10" id="pnum-10" class="marginalized">7</a></span> <span class="rm" style="color: #bf0303"><del>Each class template specialization
+instantiated from a template has its own copy of any static
+members.</del></span></p>
+<p><span class="marginalizedparent"><a href="#pnum-11" id="pnum-11" class="marginalized">7</a></span> <span class="add" style="color: #006e28"><ins><span id="note-2" class="note" data-num="1"><span>[ <em>Note <a href="#note-2">1</a>:</em> </span>Each
+class template specialization has its own copy of any static
+members.<span> — <em>end note</em> ]</span></span></ins></span></p>
+</div>
+<p>Modify p8 to focus on semantics rather than syntax:</p>
+<div class="wording">
+<p><span class="marginalizedparent"><a href="#pnum-12" id="pnum-12" class="marginalized">8</a></span> <span class="rm" style="color: #bf0303"><del>If a function declaration acquired its
+function type through a dependent type without using the syntactic form
+of a function declarator, the program is ill-formed.</del></span> <span class="add" style="color: #006e28"><ins>Neither a specialization of a
+templated variable nor a specialization of a non-static data member
+shall have function type.</ins></span></p>
+</div>
+<h3 data-number="1.3" id="temp.inst"><span class="header-section-number">1.3</span> <a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a><a href="#temp.inst" class="self-link"></a></h3>
+<p>Replace as follows:</p>
+<div class="wording">
+<p><span class="marginalizedparent"><a href="#pnum-13" id="pnum-13" class="marginalized">1</a></span> A <span class="rm" style="color: #bf0303"><del>template</del></span> specialization
+<code class="sourceCode cpp"><em>E</em></code> is a <em>declared
+specialization</em> <span class="add" style="color: #006e28"><ins>from a
+point
+<code class="sourceCode default cpp"><em>P</em></code></ins></span> if
+<span class="rm" style="color: #bf0303"><del>there is</del></span> a
+<span class="addu">declaration for
+<code class="sourceCode cpp"><em>E</em></code> that is</span> reachable
+<span class="add" style="color: #006e28"><ins>from
+<code class="sourceCode default cpp"><em>P</em></code>
+is</ins></span></p>
+<ul>
+<li><span class="marginalizedparent"><a href="#pnum-14" id="pnum-14" class="marginalized">(1.1)</a></span> <span class="add" style="color: #006e28"><ins>an</ins></span> explicit instantiation
+definition (<a href="https://eel.is/c++draft/temp.explicit" title="13.9.3 Explicit instantiation">[temp.explicit]</a>) <span class="rm" style="color: #bf0303"><del>or</del></span></li>
+<li><span class="marginalizedparent"><a href="#pnum-15" id="pnum-15" class="marginalized">(1.2)</a></span> <span class="add" style="color: #006e28"><ins>an</ins></span> explicit specialization
+declaration (<a href="https://eel.is/c++draft/temp.expl.spec" title="13.9.4 Explicit specialization">[temp.expl.spec]</a>) <span class="rm" style="color: #bf0303"><del>for
+<code class="sourceCode default cpp"><em>E</em></code></del></span>,
+or</li>
+<li><span class="marginalizedparent"><a href="#pnum-16" id="pnum-16" class="marginalized">(1.3)</a></span> <span class="rm" style="color: #bf0303"><del>if there is a reachable</del></span> <span class="add" style="color: #006e28"><ins>an</ins></span> explicit
+instantiation declaration <span class="rm" style="color: #bf0303"><del>for
+<code class="sourceCode default cpp"><em>E</em></code></del></span>
+<span class="rm" style="color: #bf0303"><del>and</del></span> <span class="add" style="color: #006e28"><ins>for which</ins></span>
+<code class="sourceCode cpp"><em>E</em></code> is not
+<ul>
+<li><span class="marginalizedparent"><a href="#pnum-17" id="pnum-17" class="marginalized">(1.3.1)</a></span> an inline function,</li>
+<li><span class="marginalizedparent"><a href="#pnum-18" id="pnum-18" class="marginalized">(1.3.2)</a></span> <span class="rm" style="color: #bf0303"><del>declared with a</del></span> <span class="add" style="color: #006e28"><ins>a function or variable
+whose</ins></span> type <span class="add" style="color: #006e28"><ins>is</ins></span> deduced from its initializer
+or return value (<a href="https://eel.is/c++draft/dcl.spec.auto" title="9.2.9.7 Placeholder type specifiers">[dcl.spec.auto]</a>),</li>
+<li><span class="marginalizedparent"><a href="#pnum-19" id="pnum-19" class="marginalized">(1.3.3)</a></span> a potentially-constant variable
+(<a href="https://eel.is/c++draft/expr.const.init" title="7.7.4 Constant initialization">[expr.const.init]</a>), or</li>
+<li><span class="marginalizedparent"><a href="#pnum-20" id="pnum-20" class="marginalized">(1.3.4)</a></span> a <span class="rm" style="color: #bf0303"><del>specialization of a templated</del></span>
+class.</li>
+</ul></li>
+</ul>
+<p><span id="note-3" class="note" data-num="1"><span>[ <em>Note <a href="#note-3">1</a>:</em> </span>An implicit instantiation in an
+importing translation unit cannot use names with internal linkage from
+an imported translation unit (<a href="https://eel.is/c++draft/basic.link" title="6.7 Program and linkage">[basic.link]</a>).<span> — <em>end
+note</em> ]</span></span></p>
+<p><span class="marginalizedparent"><a href="#pnum-21" id="pnum-21" class="marginalized">2</a></span> <span class="rm" style="color: #bf0303"><del>Unless a class template specialization is a
+declared specialization, the class template specialization is implicitly
+instantiated when the specialization is referenced in a context that
+requires a completely-defined object type or when the completeness of
+the class type affects the semantics of the program.</del></span> <span class="add" style="color: #006e28"><ins>Let
+<code class="sourceCode default cpp"><em>S</em></code> be</ins></span> a
+specialization of a templated class referred to from a point
+<code class="sourceCode cpp"><em>P</em></code> in a translation unit
+<code class="sourceCode cpp"><em>U</em></code> such that either</p>
+<ul>
+<li>the context in which <code class="sourceCode cpp"><em>S</em></code>
+is referenced requires a completely-defined object type or</li>
+<li>the completeness of <code class="sourceCode cpp"><em>S</em></code>
+affects the semantics of the program.</li>
+</ul>
+<p>If <code class="sourceCode cpp"><em>S</em></code> is not a declared
+specialization from <code class="sourceCode cpp"><em>P</em></code>, then
+an implicitly instantiated definition of
+<code class="sourceCode cpp"><em>S</em></code> shall appear at the point
+of instantiation of <code class="sourceCode cpp"><em>S</em></code> in
+<code class="sourceCode cpp"><em>U</em></code> (<a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a>).</p>
+<p><span id="note-4" class="note" data-num="2"><span>[ <em>Note <a href="#note-4">2</a>:</em> </span>In particular, if the semantics of an
+expression depend on the member or base class lists of a class template
+specialization, the class template specialization is implicitly
+generated. For instance, deleting a pointer to class type depends on
+whether or not the class declares a destructor, and a conversion between
+pointers to class type depends on the inheritance relationship between
+the two classes involved.<span> — <em>end note</em> ]</span></span></p>
+<div id="example-2" class="example" data-num="1">
+<span>[ <em>Example <a href="#example-2">1</a>:</em> </span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span><span class="kw">class</span> T<span class="op">&gt;</span> <span class="kw">class</span> B <span class="op">{</span> <span class="co">/* ... */</span> <span class="op">};</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span><span class="kw">class</span> T<span class="op">&gt;</span> <span class="kw">class</span> D <span class="op">:</span> <span class="kw">public</span> B<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">{</span> <span class="co">/* ... */</span> <span class="op">};</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">(</span><span class="dt">void</span><span class="op">*);</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">(</span>B<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;*);</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> g<span class="op">(</span>D<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;*</span> p<span class="op">,</span> D<span class="op">&lt;</span><span class="dt">char</span><span class="op">&gt;*</span> pp<span class="op">,</span> D<span class="op">&lt;</span><span class="dt">double</span><span class="op">&gt;*</span> ppp<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  f<span class="op">(</span>p<span class="op">);</span>             <span class="co">// instantiation of D&lt;int&gt; required: call f(B&lt;int&gt;*)</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  B<span class="op">&lt;</span><span class="dt">char</span><span class="op">&gt;*</span> q <span class="op">=</span> pp<span class="op">;</span>  <span class="co">// instantiation of D&lt;char&gt; required: convert D&lt;char&gt;* to B&lt;char&gt;*</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">delete</span> ppp<span class="op">;</span>       <span class="co">// instantiation of D&lt;double&gt; required</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<span> — <em>end example</em> ]</span>
+</div>
+<p>If the template selected for the specialization (<a href="https://eel.is/c++draft/temp.spec.partial.match" title="13.7.6.2 Matching of partial specializations">[temp.spec.partial.match]</a>)
+has been declared, but not defined, at the point of instantiation (<a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a>), the
+instantiation yields an incomplete class type (<a href="https://eel.is/c++draft/basic.types.general" title="6.9.1 General">[basic.types.general]</a>).</p>
+</div>
+<h3 data-number="1.4" id="temp.point"><span class="header-section-number">1.4</span> <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a><a href="#temp.point" class="self-link"></a></h3>
 <p>Replace <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a> with the
 following:</p>
 <div class="wording">
-<p><span class="marginalizedparent"><a href="#pnum-1" id="pnum-1" class="marginalized">1</a></span> The <em>candidate points of
-instantiation</em> of a specialization
+<p><span class="marginalizedparent"><a href="#pnum-22" id="pnum-22" class="marginalized">1</a></span> The <em>candidate points of
+instantiation</em> for a specialization
 <code class="sourceCode cpp"><em>S</em></code> in a translation unit
 <code class="sourceCode cpp"><em>U</em></code> is a (possibly empty) set
 of program points in <code class="sourceCode cpp"><em>U</em></code>, the
-composition of which is specified below. A candidate point
-<code class="sourceCode cpp"><em>P</em></code> of instantiation of
+composition of which is specified below.</p>
+<p><span class="marginalizedparent"><a href="#pnum-23" id="pnum-23" class="marginalized">2</a></span> A translation unit
+<code class="sourceCode cpp"><em>U</em></code> contains an instantiated
+declaration of a specialization
+<code class="sourceCode cpp"><em>S</em></code> if and only if the set of
+candidate points of instantiation of
 <code class="sourceCode cpp"><em>S</em></code> in
-<code class="sourceCode cpp"><em>U</em></code> is an <em>allowed point
-of instantiation</em> if there is no candidate point of instantiation of
+<code class="sourceCode cpp"><em>U</em></code> is non-empty. Within such
+a translation unit, a non-defining instantiated declaration of
+<code class="sourceCode cpp"><em>S</em></code> appears at the first
+candidate point of instantiation of
+<code class="sourceCode cpp"><em>S</em></code> in
+<code class="sourceCode cpp"><em>U</em></code>. The translation unit
+<code class="sourceCode cpp"><em>U</em></code> may contain other
+non-defining instantiated declarations of
+<code class="sourceCode cpp"><em>S</em></code>; each such declaration
+shall appear at a candidate point of instantiation of
+<code class="sourceCode cpp"><em>S</em></code> in
+<code class="sourceCode cpp"><em>U</em></code>.</p>
+<p><span class="marginalizedparent"><a href="#pnum-24" id="pnum-24" class="marginalized">3</a></span> A candidate point of instantiation
+<code class="sourceCode cpp"><em>P</em></code> for
+<code class="sourceCode cpp"><em>S</em></code> in
+<code class="sourceCode cpp"><em>U</em></code> that is specified as
+defining (see below) is an <em>allowed point of instantiation</em> if
+there is no defining candidate point of instantiation for
 <code class="sourceCode cpp"><em>S</em></code> in
 <code class="sourceCode cpp"><em>U</em></code> that is specified to be
 eager (see below) which precedes
 <code class="sourceCode cpp"><em>P</em></code>.</p>
-<p><span class="marginalizedparent"><a href="#pnum-2" id="pnum-2" class="marginalized">2</a></span> If a specialization
-<code class="sourceCode cpp"><em>S</em></code> has at least one
-candidate point of instantiation in
-<code class="sourceCode cpp"><em>U</em></code>, one of its allowed
-points of instantiation in
-<code class="sourceCode cpp"><em>U</em></code> is the <em>point of
-instantiation</em> of <code class="sourceCode cpp"><em>S</em></code> in
-<code class="sourceCode cpp"><em>U</em></code>; the manner in which the
-point of instantiation is chosen is unspecified. A definition of
-<code class="sourceCode cpp"><em>S</em></code> whose target scope is the
-target scope of the primary template of
-<code class="sourceCode cpp"><em>S</em></code> is instantiated at each
-of the points of instantiation of
-<code class="sourceCode cpp"><em>S</em></code>. If the definitions of
-<code class="sourceCode cpp"><em>S</em></code> that would be
-instantiated from each allowed point of instantiation are not equivalent
-according to the one-definition rule (<a href="https://eel.is/c++draft/basic.def.odr" title="6.3 One-definition rule">[basic.def.odr]</a>), the program is
-ill-formed, no diagnostic required.</p>
-<p><span class="marginalizedparent"><a href="#pnum-3" id="pnum-3" class="marginalized">3</a></span> Letting
+<p><span class="marginalizedparent"><a href="#pnum-25" id="pnum-25" class="marginalized">4</a></span> A specialization
+<code class="sourceCode cpp"><em>S</em></code> of a templated entity
+<code class="sourceCode cpp"><em>T</em></code> is <em>instantiated
+from</em> a translation unit
+<code class="sourceCode cpp"><em>U</em></code> if a definition of
+<code class="sourceCode cpp"><em>T</em></code> is reachable from one of
+the allowed points of instantiation of
+<code class="sourceCode cpp"><em>S</em></code> in
+<code class="sourceCode cpp"><em>U</em></code>. A definition of
+<code class="sourceCode cpp"><em>T</em></code> shall be reachable from
+each allowed point of instantiation of
+<code class="sourceCode cpp"><em>S</em></code> in each translation unit
+from which <code class="sourceCode cpp"><em>S</em></code> is
+instantiated, no diagnostic is required. Given two allowed points of
+instantiation of <code class="sourceCode cpp"><em>S</em></code> in
+translation units from which
+<code class="sourceCode cpp"><em>S</em></code> is instantiated, the
+hypothetical definitions of
+<code class="sourceCode cpp"><em>S</em></code> that would be synthesized
+at each such point shall be equivalent according to the one-definition
+rule (<a href="https://eel.is/c++draft/basic.def.odr" title="6.3 One-definition rule">[basic.def.odr]</a>), no diagnostic is
+required.</p>
+<p><span class="marginalizedparent"><a href="#pnum-26" id="pnum-26" class="marginalized">5</a></span> In each translation unit
+<code class="sourceCode cpp"><em>U</em></code> from which a
+specialization <code class="sourceCode cpp"><em>S</em></code> is
+instantiated, an unspecified allowed point of instantiation of
+<code class="sourceCode cpp"><em>S</em></code> in
+<code class="sourceCode cpp"><em>U</em></code> is a <em>point of
+instantiation</em> of <code class="sourceCode cpp"><em>S</em></code>. A
+translation unit contains at most one point of instantiation of a
+specialization.</p>
+<p><span class="marginalizedparent"><a href="#pnum-27" id="pnum-27" class="marginalized">6</a></span> Letting
 <code class="sourceCode cpp"><em>S</em></code> be a specialization, or a
 separately instantiated construct thereof (<a href="https://eel.is/c++draft/temp.decls.general" title="13.7.1 General">[temp.decls.general]</a>), whose implicit
-instantiation is required at a point
+instantiation is required from a point
 <code class="sourceCode cpp"><em>R</em></code> (<a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a>),</p>
 <ul>
-<li><p><span class="marginalizedparent"><a href="#pnum-4" id="pnum-4" class="marginalized">(3.1)</a></span> if
+<li><p><span class="marginalizedparent"><a href="#pnum-28" id="pnum-28" class="marginalized">(6.1)</a></span> if
 <code class="sourceCode cpp"><em>R</em></code> is enclosed by a
 specialization, each candidate point of instantiation of the innermost
 specialization enclosing <code class="sourceCode cpp"><em>R</em></code>
 is a candidate point of instantiation of
 <code class="sourceCode cpp"><em>S</em></code>;</p></li>
-<li><p><span class="marginalizedparent"><a href="#pnum-5" id="pnum-5" class="marginalized">(3.2)</a></span> otherwise, if
+<li><p><span class="marginalizedparent"><a href="#pnum-29" id="pnum-29" class="marginalized">(6.2)</a></span> otherwise, if
 <code class="sourceCode cpp"><em>S</em></code> is</p>
 <ul>
-<li><span class="marginalizedparent"><a href="#pnum-6" id="pnum-6" class="marginalized">(3.2.1)</a></span> a specialization of a templated
+<li><span class="marginalizedparent"><a href="#pnum-30" id="pnum-30" class="marginalized">(6.2.1)</a></span> a specialization of a templated
 class,</li>
-<li><span class="marginalizedparent"><a href="#pnum-7" id="pnum-7" class="marginalized">(3.2.2)</a></span> a specialization of a templated
+<li><span class="marginalizedparent"><a href="#pnum-31" id="pnum-31" class="marginalized">(6.2.2)</a></span> a specialization of a templated
 variable whose type contains a placeholder type,</li>
-<li><span class="marginalizedparent"><a href="#pnum-8" id="pnum-8" class="marginalized">(3.2.3)</a></span> a specialization of a templated
+<li><span class="marginalizedparent"><a href="#pnum-32" id="pnum-32" class="marginalized">(6.2.3)</a></span> a specialization of a templated
 function whose return type is deduced, or</li>
-<li><span class="marginalizedparent"><a href="#pnum-9" id="pnum-9" class="marginalized">(3.2.4)</a></span> a default argument</li>
+<li><span class="marginalizedparent"><a href="#pnum-33" id="pnum-33" class="marginalized">(6.2.4)</a></span> a default argument</li>
 </ul>
 <p><code class="sourceCode cpp"><em>R</em></code> is an eager candidate
 point of instantiation of
 <code class="sourceCode cpp"><em>S</em></code>;</p></li>
-<li><p><span class="marginalizedparent"><a href="#pnum-10" id="pnum-10" class="marginalized">(3.3)</a></span> otherwise, the point immediately
+<li><p><span class="marginalizedparent"><a href="#pnum-34" id="pnum-34" class="marginalized">(6.3)</a></span> otherwise, the point immediately
 following the innermost namespace-scope declaration that contains
 <code class="sourceCode cpp"><em>R</em></code> is a candidate point of
 instantiation of
 <code class="sourceCode cpp"><em>S</em></code>.</p></li>
 </ul>
-<p><span class="marginalizedparent"><a href="#pnum-11" id="pnum-11" class="marginalized">4</a></span> A virtual member function of a
+<p><span class="marginalizedparent"><a href="#pnum-35" id="pnum-35" class="marginalized">7</a></span> A virtual member function of a
 specialization of a templated class
 <code class="sourceCode cpp"><em>C</em></code> has a candidate point of
 instantiation immediately following each candidate point of
 instantiation of <code class="sourceCode cpp"><em>C</em></code>.</p>
-<p><span class="marginalizedparent"><a href="#pnum-12" id="pnum-12" class="marginalized">5</a></span> The point immediately following an
+<p><span class="marginalizedparent"><a href="#pnum-36" id="pnum-36" class="marginalized">8</a></span> The point immediately following an
 explicit instantiation definition is a candidate point of instantiation
 of the specialization <code class="sourceCode cpp"><em>S</em></code>
 specified by the explicit instantiation. This candidate point of
 instantiation is eager if</p>
 <ul>
-<li><span class="marginalizedparent"><a href="#pnum-13" id="pnum-13" class="marginalized">(5.1)</a></span>
+<li><span class="marginalizedparent"><a href="#pnum-37" id="pnum-37" class="marginalized">(8.1)</a></span>
 <code class="sourceCode cpp"><em>S</em></code> is a specialization of a
 templated class,</li>
-<li><span class="marginalizedparent"><a href="#pnum-14" id="pnum-14" class="marginalized">(5.2)</a></span>
+<li><span class="marginalizedparent"><a href="#pnum-38" id="pnum-38" class="marginalized">(8.2)</a></span>
 <code class="sourceCode cpp"><em>S</em></code> is a specialization of a
 templated function whose return type is deduced, or</li>
-<li><span class="marginalizedparent"><a href="#pnum-15" id="pnum-15" class="marginalized">(5.3)</a></span>
+<li><span class="marginalizedparent"><a href="#pnum-39" id="pnum-39" class="marginalized">(8.3)</a></span>
 <code class="sourceCode cpp"><em>S</em></code> is a specialization of a
 templated variable whose type contains a placeholder type.</li>
 </ul>
-<p><span class="marginalizedparent"><a href="#pnum-16" id="pnum-16" class="marginalized">6</a></span> The point immediately at the end of a
+<p><span class="marginalizedparent"><a href="#pnum-40" id="pnum-40" class="marginalized">9</a></span> The point immediately at the end of a
 definition domain (<a href="https://eel.is/c++draft/basic.def.odr" title="6.3 One-definition rule">[basic.def.odr]</a>) is a candidate
 point of instantiation of each specialization that has a candidate point
 of instantiation within the definition domain.</p>
-<p><span class="marginalizedparent"><a href="#pnum-17" id="pnum-17" class="marginalized">7</a></span> If the evaluation of a manifestly
+<p><span class="marginalizedparent"><a href="#pnum-41" id="pnum-41" class="marginalized">10</a></span> If the evaluation of a manifestly
 constant-evaluated expression, or the determination of whether an
 expression is manifestly constant-evaluated, requires a specialization
 <code class="sourceCode cpp"><em>S</em></code> to be defined,
@@ -667,16 +927,16 @@ expression is manifestly constant-evaluated, requires a specialization
 instantiation immediately before the point at which the expression
 appears (call it <code class="sourceCode cpp"><em>P</em></code>) if</p>
 <ul>
-<li><span class="marginalizedparent"><a href="#pnum-18" id="pnum-18" class="marginalized">(7.1)</a></span>
+<li><span class="marginalizedparent"><a href="#pnum-42" id="pnum-42" class="marginalized">(10.1)</a></span>
 <code class="sourceCode cpp"><em>S</em></code> is not a declared
 specialization from <code class="sourceCode cpp"><em>P</em></code>
 and</li>
-<li><span class="marginalizedparent"><a href="#pnum-19" id="pnum-19" class="marginalized">(7.2)</a></span> the template definition from which
-the definition of <code class="sourceCode cpp"><em>S</em></code> would
-be instantiated is reachable from
+<li><span class="marginalizedparent"><a href="#pnum-43" id="pnum-43" class="marginalized">(10.2)</a></span> the template definition from
+which the definition of <code class="sourceCode cpp"><em>S</em></code>
+would be instantiated is reachable from
 <code class="sourceCode cpp"><em>P</em></code>.</li>
 </ul>
-<p><span class="marginalizedparent"><a href="#pnum-20" id="pnum-20" class="marginalized">8</a></span> For an
+<p><span class="marginalizedparent"><a href="#pnum-44" id="pnum-44" class="marginalized">11</a></span> For an
 <code class="sourceCode cpp"><em>expansion-statement</em></code>
 <code class="sourceCode cpp"><em>S</em></code> (<a href="https://eel.is/c++draft/stmt.expand" title="8.7 Expansion statements">[stmt.expand]</a>) enclosed by a
 specialization, the candidate points of instantiation of the innermost
@@ -692,11 +952,11 @@ instantiation of the
 <code class="sourceCode cpp"><em>compound-statement</em></code> of
 <code class="sourceCode cpp"><em>S</em></code>.</p>
 </div>
-<h3 data-number="1.2" id="module.context"><span class="header-section-number">1.2</span> <a href="https://eel.is/c++draft/module.context" title="10.6 Instantiation context">[module.context]</a><a href="#module.context" class="self-link"></a></h3>
+<h3 data-number="1.5" id="module.context"><span class="header-section-number">1.5</span> <a href="https://eel.is/c++draft/module.context" title="10.6 Instantiation context">[module.context]</a><a href="#module.context" class="self-link"></a></h3>
 <p>Modify <a href="https://eel.is/c++draft/module.context#3" title="10.6 Instantiation context, paragraph 3">[module.context]/3</a>
 as follows:</p>
 <div class="wording">
-<p><span class="marginalizedparent"><a href="#pnum-21" id="pnum-21" class="marginalized">3</a></span> During the instantiation of any other
+<p><span class="marginalizedparent"><a href="#pnum-45" id="pnum-45" class="marginalized">3</a></span> During the instantiation of any other
 template specialization <code class="sourceCode cpp"><em>S</em></code>
 <span class="add" style="color: #006e28"><ins>in a translation unit
 <code class="sourceCode default cpp"><em>U</em></code> whose point of
@@ -706,16 +966,16 @@ the instantiation context contains <span class="rm" style="color: #bf0303"><del>
 template.</del></span> <span class="add" style="color: #006e28"><ins>the
 following program point:</ins></span></p>
 <ul>
-<li><span class="add" style="color: #006e28"><ins><span class="marginalizedparent"><a href="#pnum-22" id="pnum-22" class="marginalized">(3.1)</a></span> if
+<li><span class="add" style="color: #006e28"><ins><span class="marginalizedparent"><a href="#pnum-46" id="pnum-46" class="marginalized">(3.1)</a></span> if
 <code class="sourceCode default cpp"><em>P</em></code> is a point at a
 namespace scope, then
 <code class="sourceCode default cpp"><em>P</em></code>.</ins></span></li>
-<li><span class="add" style="color: #006e28"><ins><span class="marginalizedparent"><a href="#pnum-23" id="pnum-23" class="marginalized">(3.2)</a></span> Otherwise, if
+<li><span class="add" style="color: #006e28"><ins><span class="marginalizedparent"><a href="#pnum-47" id="pnum-47" class="marginalized">(3.2)</a></span> Otherwise, if
 <code class="sourceCode default cpp"><em>P</em></code> is an eager point
 of instantiation, then the point immediately before the innermost
 namespace-scope declaration enclosing
 <code class="sourceCode default cpp"><em>P</em></code>.</ins></span></li>
-<li><span class="add" style="color: #006e28"><ins><span class="marginalizedparent"><a href="#pnum-24" id="pnum-24" class="marginalized">(3.3)</a></span> Otherwise, the point immediately
+<li><span class="add" style="color: #006e28"><ins><span class="marginalizedparent"><a href="#pnum-48" id="pnum-48" class="marginalized">(3.3)</a></span> Otherwise, the point immediately
 after the innermost namespace-scope declaration enclosing
 <code class="sourceCode default cpp"><em>P</em></code>.</ins></span></li>
 </ul>
