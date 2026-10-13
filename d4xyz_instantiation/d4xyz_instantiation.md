@@ -11,6 +11,37 @@ status: progress
 tag: templates
 ---
 
+## Abstract
+
+We argue that the Standard's rules ([temp.point]) for when a specialization may be instantiated are at odds with the behavior exhibited by all known implementations. We then describe why improving the specification for Instantiation unavoidably leads us also to the specification for Constant Evaluation. We describe problems with existing wording, strive to motivate why these problems are worth solving (knowing that the Committee's time is limited), and sketch a framework for how a more robust specification might be shaped.
+
+## Background
+
+- Existing practice: The evaluation of an expression during translation can trigger instantiation.
+- Review: How the Standard specifies when instantiation can take place (point of instantiation).
+  - Instantiation of declarations vs definitions.
+- The Reflection connection
+  - How we solve it: The Evaluation Context
+  - Problem: Immediate-escalating expressions
+
+## Why this is worth solving
+
+- Motivating example: `unique_ptr`, `string`, etc.
+- Motivating example: P2996 discourse.
+- Motivating example: History of Clang issues and attempts to fix this.
+
+## Proposed solutions
+
+- Stuff in the draft wording of this paper.
+  - I think specificying instantiation of declarations needs more thought; drop this if it turns out to be too hard.
+- Evaluation Context needs the "POI treatment"
+  - Move the "point of evaluation" to after the function body for immediate invocations
+    - Careful: Some evaluations _do_ happen "in" the function body (e.g., template arguments, which are needed to determine types)
+  - Allow multiple strategies for forming the Evaluation Context (e.g., for immediate-escalating expressions)
+    - Need to consider modules as well.
+    - Programs are IFNDR if the choice makes a semantic difference.
+
+
 ## Wording
 - TODO: Does CWG3065 fuck anything up if the point of instantiation is at block scope?
   - Generally: Figure out which target _and_ inhabited scopes these things should have.
@@ -177,7 +208,7 @@ The "outputs" of this section are the "declarative points of instantiation" and 
 [#]{.pnum} A candidate point of instantiation `$P$` for `$S$` in `$U$` that is specified as defining (see below) is an _allowed point of instantiation_ if
 
 - [#.#]{.pnum} there is no defining candidate point of instantiation for `$S$` in `$U$` that is specified to be eager (see below) which precedes `$P$` and
-- [#.#]{.pnum} `$S$` is not a declared specialization from `$P$` ([temp.inst]).
+- [#.#]{.pnum} `$S$` is not a declared specialization from `$P$` ([temp.spec.general]).
 
 [#]{.pnum} A specialization `$S$` of a templated entity `$T$` is _instantiated from_ a translation unit `$U$` if a definition of `$T$` is reachable from one of the allowed points of instantiation of `$S$` in `$U$`. A definition of `$T$` shall be reachable from each allowed point of instantiation of `$S$` in each translation unit from which `$S$` is instantiated, no diagnostic is required. Given two allowed points of instantiation of `$S$` in translation units from which `$S$` is instantiated, the hypothetical definitions of `$S$` that would be synthesized at each such point shall be equivalent according to the one-definition rule ([basic.def.odr]), no diagnostic is required.
 

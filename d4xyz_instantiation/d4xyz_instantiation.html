@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2026-07-16" />
+  <meta name="dcterms.date" content="2026-10-13" />
   <title>Instantiation</title>
   <style>
 
@@ -523,7 +523,7 @@ display: none !important;
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2026-07-16</td>
+    <td>2026-10-13</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -547,17 +547,76 @@ display: none !important;
 <div id="TOC" role="doc-toc">
 <h1 id="toctitle">Contents</h1>
 <ul>
-<li><a href="#wording" id="toc-wording"><span class="toc-section-number">1</span> Wording</a>
+<li><a href="#abstract" id="toc-abstract"><span class="toc-section-number">1</span> Abstract</a></li>
+<li><a href="#background" id="toc-background"><span class="toc-section-number">2</span> Background</a></li>
+<li><a href="#why-this-is-worth-solving" id="toc-why-this-is-worth-solving"><span class="toc-section-number">3</span> Why this is worth solving</a></li>
+<li><a href="#proposed-solutions" id="toc-proposed-solutions"><span class="toc-section-number">4</span> Proposed solutions</a></li>
+<li><a href="#wording" id="toc-wording"><span class="toc-section-number">5</span> Wording</a>
 <ul>
-<li><a href="#temp.decls.general" id="toc-temp.decls.general"><span class="toc-section-number">1.1</span> [temp.decls.general]</a></li>
-<li><a href="#temp.spec.general" id="toc-temp.spec.general"><span class="toc-section-number">1.2</span> [temp.spec.general]</a></li>
-<li><a href="#temp.inst" id="toc-temp.inst"><span class="toc-section-number">1.3</span> [temp.inst]</a></li>
-<li><a href="#temp.point" id="toc-temp.point"><span class="toc-section-number">1.4</span> [temp.point]</a></li>
-<li><a href="#module.context" id="toc-module.context"><span class="toc-section-number">1.5</span> [module.context]</a></li>
+<li><a href="#temp.decls.general" id="toc-temp.decls.general"><span class="toc-section-number">5.1</span> [temp.decls.general]</a></li>
+<li><a href="#temp.spec.general" id="toc-temp.spec.general"><span class="toc-section-number">5.2</span> [temp.spec.general]</a></li>
+<li><a href="#temp.inst" id="toc-temp.inst"><span class="toc-section-number">5.3</span> [temp.inst]</a></li>
+<li><a href="#temp.point" id="toc-temp.point"><span class="toc-section-number">5.4</span> [temp.point]</a></li>
+<li><a href="#module.context" id="toc-module.context"><span class="toc-section-number">5.5</span> [module.context]</a></li>
 </ul></li>
 </ul>
 </div>
-<h2 data-number="1" id="wording"><span class="header-section-number">1</span> Wording<a href="#wording" class="self-link"></a></h2>
+<h2 data-number="1" id="abstract"><span class="header-section-number">1</span> Abstract<a href="#abstract" class="self-link"></a></h2>
+<p>We argue that the Standard’s rules (<a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a>) for when a
+specialization may be instantiated are at odds with the behavior
+exhibited by all known implementations. We then describe why improving
+the specification for Instantiation unavoidably leads us also to the
+specification for Constant Evaluation. We describe problems with
+existing wording, strive to motivate why these problems are worth
+solving (knowing that the Committee’s time is limited), and sketch a
+framework for how a more robust specification might be shaped.</p>
+<h2 data-number="2" id="background"><span class="header-section-number">2</span> Background<a href="#background" class="self-link"></a></h2>
+<ul>
+<li>Existing practice: The evaluation of an expression during
+translation can trigger instantiation.</li>
+<li>Review: How the Standard specifies when instantiation can take place
+(point of instantiation).
+<ul>
+<li>Instantiation of declarations vs definitions.</li>
+</ul></li>
+<li>The Reflection connection
+<ul>
+<li>How we solve it: The Evaluation Context</li>
+<li>Problem: Immediate-escalating expressions</li>
+</ul></li>
+</ul>
+<h2 data-number="3" id="why-this-is-worth-solving"><span class="header-section-number">3</span> Why this is worth solving<a href="#why-this-is-worth-solving" class="self-link"></a></h2>
+<ul>
+<li>Motivating example: <code class="sourceCode cpp">unique_ptr</code>,
+<code class="sourceCode cpp">string</code>, etc.</li>
+<li>Motivating example: P2996 discourse.</li>
+<li>Motivating example: History of Clang issues and attempts to fix
+this.</li>
+</ul>
+<h2 data-number="4" id="proposed-solutions"><span class="header-section-number">4</span> Proposed solutions<a href="#proposed-solutions" class="self-link"></a></h2>
+<ul>
+<li>Stuff in the draft wording of this paper.
+<ul>
+<li>I think specificying instantiation of declarations needs more
+thought; drop this if it turns out to be too hard.</li>
+</ul></li>
+<li>Evaluation Context needs the “POI treatment”
+<ul>
+<li>Move the “point of evaluation” to after the function body for
+immediate invocations
+<ul>
+<li>Careful: Some evaluations <em>do</em> happen “in” the function body
+(e.g., template arguments, which are needed to determine types)</li>
+</ul></li>
+<li>Allow multiple strategies for forming the Evaluation Context (e.g.,
+for immediate-escalating expressions)
+<ul>
+<li>Need to consider modules as well.</li>
+<li>Programs are IFNDR if the choice makes a semantic difference.</li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 data-number="5" id="wording"><span class="header-section-number">5</span> Wording<a href="#wording" class="self-link"></a></h2>
 <ul>
 <li>TODO: Does CWG3065 fuck anything up if the point of instantiation is
 at block scope?
@@ -566,7 +625,7 @@ at block scope?
 these things should have.</li>
 </ul></li>
 </ul>
-<h3 data-number="1.1" id="temp.decls.general"><span class="header-section-number">1.1</span> <a href="https://eel.is/c++draft/temp.decls.general" title="13.7.1 General">[temp.decls.general]</a><a href="#temp.decls.general" class="self-link"></a></h3>
+<h3 data-number="5.1" id="temp.decls.general"><span class="header-section-number">5.1</span> <a href="https://eel.is/c++draft/temp.decls.general" title="13.7.1 General">[temp.decls.general]</a><a href="#temp.decls.general" class="self-link"></a></h3>
 <p>Modify paragraph 3 as follows:</p>
 <div class="wording">
 <p><span class="marginalizedparent"><a href="#pnum-1" id="pnum-1" class="marginalized">3</a></span> A separately instantiated construct of
@@ -598,7 +657,7 @@ definitions. For the purpose of name lookup and instantiation, the
 <code class="sourceCode cpp"><em>expansion-statement</em></code> is
 considered a template definition.</p>
 </div>
-<h3 data-number="1.2" id="temp.spec.general"><span class="header-section-number">1.2</span> <a href="https://eel.is/c++draft/temp.spec.general" title="13.9.1 General">[temp.spec.general]</a><a href="#temp.spec.general" class="self-link"></a></h3>
+<h3 data-number="5.2" id="temp.spec.general"><span class="header-section-number">5.2</span> <a href="https://eel.is/c++draft/temp.spec.general" title="13.9.1 General">[temp.spec.general]</a><a href="#temp.spec.general" class="self-link"></a></h3>
 <p>Modify as far as p4 as follows:</p>
 <div class="wording">
 <p><span class="marginalizedparent"><a href="#pnum-5" id="pnum-5" class="marginalized">*</a></span> <span class="add" style="color: #006e28"><ins>An entity
@@ -738,7 +797,7 @@ of a function declarator, the program is ill-formed.</del></span> <span class="a
 templated variable nor a specialization of a non-static data member
 shall have function type.</ins></span></p>
 </div>
-<h3 data-number="1.3" id="temp.inst"><span class="header-section-number">1.3</span> <a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a><a href="#temp.inst" class="self-link"></a></h3>
+<h3 data-number="5.3" id="temp.inst"><span class="header-section-number">5.3</span> <a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a><a href="#temp.inst" class="self-link"></a></h3>
 <p>Replace as follows:</p>
 <div class="wording">
 <p><span class="ednote" style="color: #0000ff">[ Editor&#39;s note: The
@@ -808,7 +867,7 @@ instantiated definition of
 defining point of instantiation of
 <code class="sourceCode default cpp"><em>S</em></code> (<a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a>).</ins></span></p>
 </div>
-<h3 data-number="1.4" id="temp.point"><span class="header-section-number">1.4</span> <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a><a href="#temp.point" class="self-link"></a></h3>
+<h3 data-number="5.4" id="temp.point"><span class="header-section-number">5.4</span> <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a><a href="#temp.point" class="self-link"></a></h3>
 <p>Replace <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a> with the
 following:</p>
 <div class="draftnote" style="color: #0000ff">
@@ -880,7 +939,7 @@ eager (see below) which precedes
 <code class="sourceCode cpp"><em>P</em></code> and</li>
 <li><span class="marginalizedparent"><a href="#pnum-31" id="pnum-31" class="marginalized">(3.2)</a></span>
 <code class="sourceCode cpp"><em>S</em></code> is not a declared
-specialization from <code class="sourceCode cpp"><em>P</em></code> (<a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a>).</li>
+specialization from <code class="sourceCode cpp"><em>P</em></code> (<a href="https://eel.is/c++draft/temp.spec.general" title="13.9.1 General">[temp.spec.general]</a>).</li>
 </ul>
 <p><span class="marginalizedparent"><a href="#pnum-32" id="pnum-32" class="marginalized">4</a></span> A specialization
 <code class="sourceCode cpp"><em>S</em></code> of a templated entity
@@ -1003,7 +1062,7 @@ instantiation of the
 <code class="sourceCode cpp"><em>compound-statement</em></code> of
 <code class="sourceCode cpp"><em>S</em></code>.</p>
 </div>
-<h3 data-number="1.5" id="module.context"><span class="header-section-number">1.5</span> <a href="https://eel.is/c++draft/module.context" title="10.6 Instantiation context">[module.context]</a><a href="#module.context" class="self-link"></a></h3>
+<h3 data-number="5.5" id="module.context"><span class="header-section-number">5.5</span> <a href="https://eel.is/c++draft/module.context" title="10.6 Instantiation context">[module.context]</a><a href="#module.context" class="self-link"></a></h3>
 <p>Modify <a href="https://eel.is/c++draft/module.context#3" title="10.6 Instantiation context, paragraph 3">[module.context]/3</a>
 as follows:</p>
 <div class="wording">
