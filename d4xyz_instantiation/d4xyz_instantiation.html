@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2026-10-13" />
-  <title>Instantiation</title>
+  <meta name="dcterms.date" content="2026-10-14" />
+  <title>Instantiation and Constant Evaluation</title>
   <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -513,7 +513,8 @@ display: none !important;
 </form>
 <div class="wrapper">
 <header id="title-block-header">
-<h1 class="title" style="text-align:center">Instantiation</h1>
+<h1 class="title" style="text-align:center">Instantiation and Constant
+Evaluation</h1>
 <table>
   <tr>
     <td>Document #:</td>
@@ -523,7 +524,7 @@ display: none !important;
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2026-10-13</td>
+    <td>2026-10-14</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -548,7 +549,15 @@ display: none !important;
 <h1 id="toctitle">Contents</h1>
 <ul>
 <li><a href="#abstract" id="toc-abstract"><span class="toc-section-number">1</span> Abstract</a></li>
-<li><a href="#background" id="toc-background"><span class="toc-section-number">2</span> Background</a></li>
+<li><a href="#background" id="toc-background"><span class="toc-section-number">2</span> Background</a>
+<ul>
+<li><a href="#a-brief-review" id="toc-a-brief-review"><span class="toc-section-number">2.1</span> A brief review</a></li>
+<li><a href="#aside-temp.point-has-always-been-a-train-wreck" id="toc-aside-temp.point-has-always-been-a-train-wreck"><span class="toc-section-number">2.2</span> Aside: [temp.point] has always
+been a train wreck=</a></li>
+<li><a href="#instantiation-during-constant-evaluation" id="toc-instantiation-during-constant-evaluation"><span class="toc-section-number">2.3</span> Instantiation during constant
+evaluation</a></li>
+<li><a href="#todo" id="toc-todo"><span class="toc-section-number">2.4</span> TODO</a></li>
+</ul></li>
 <li><a href="#why-this-is-worth-solving" id="toc-why-this-is-worth-solving"><span class="toc-section-number">3</span> Why this is worth solving</a></li>
 <li><a href="#proposed-solutions" id="toc-proposed-solutions"><span class="toc-section-number">4</span> Proposed solutions</a></li>
 <li><a href="#wording" id="toc-wording"><span class="toc-section-number">5</span> Wording</a>
@@ -571,14 +580,106 @@ existing wording, strive to motivate why these problems are worth
 solving (knowing that the Committee’s time is limited), and sketch a
 framework for how a more robust specification might be shaped.</p>
 <h2 data-number="2" id="background"><span class="header-section-number">2</span> Background<a href="#background" class="self-link"></a></h2>
+<h3 data-number="2.1" id="a-brief-review"><span class="header-section-number">2.1</span> A brief review<a href="#a-brief-review" class="self-link"></a></h3>
+<p>When a specialization <code class="sourceCode cpp"><em>S</em></code>
+is required to be defined and
+<code class="sourceCode cpp"><em>S</em></code> is not an explicit
+specialization, an instantiated definition of
+<code class="sourceCode cpp"><em>S</em></code> is synthesized from a
+definition of the template which
+<code class="sourceCode cpp"><em>S</em></code> specializes. This
+synthesized definition is considered to “appear” at some program point
+in the containing translation unit called the <strong>point of
+instantiation</strong> of
+<code class="sourceCode cpp"><em>S</em></code>. Depending on the
+location of this point of instantiation, declarations may or may not be
+reachable from the constructs within the instantiated definition, which
+can affect the semantics and well-formedness of the broader program.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="dt">void</span> f<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  T t<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  f<span class="op">&lt;</span><span class="kw">struct</span> S<span class="op">&gt;();</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span><span class="co">/*P1*/</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> S <span class="op">{};</span> <span class="co">/*P2*/</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">// &#39;f&lt;S&gt;&#39; is ill-formed if instantiated from P1,</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">// but well-formed if instantiated from P2.</span></span></code></pre></div>
+<p>Implementations have historically adopted different strategies for
+selecting points of instantiation. Some compilers instantiate
+specializations eagerly (i.e., synthesize as soon as the definition is
+known to be required), while others defer instantiation for as long as
+possible (i.e., try to wait until all tokens have been parsed before
+synthesizing any instantiated definitions). The Standard carves out
+space for each such strategy by enumerating the set of points at which a
+given specialization is permitted to appear (<a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a>).</p>
+<p>A problem immediately emerges: If an implementation is entitled to
+synthesize an instantiated definition from any of several program
+points, and the choice of said point can affect the semantics of the
+program, then how can the Standard say even whether such programs are
+valid C++? As it turns out, the Standard does not try: Any program whose
+well-formedness or semantics depend on a particular point of
+instantiation being selected from among several allowed options is
+ill-formed, no diagnostic required. The burden of responsibility for
+ensuring that the program does not depend on a particular instantiation
+strategy is thus shifted from the implementer to the user. Alas! in a
+world with 4+ actively evolving implementations of the language, it
+could scarcely be any other way.</p>
+<h3 data-number="2.2" id="aside-temp.point-has-always-been-a-train-wreck"><span class="header-section-number">2.2</span> Aside: <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a> has always been
+a train wreck=<a href="#aside-temp.point-has-always-been-a-train-wreck" class="self-link"></a></h3>
+<p>Anybody who stares at <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a> long enough is
+likely to conclude that it makes very little sense. A few of my
+grievances with even the existing scope of specification:</p>
+<ul>
+<li><p>Whereas every other section of the Standard speaks of a
+specialization as having a <em>single</em> “point of instantiation”
+(e.g., <a href="https://eel.is/c++draft/module.context" title="10.6 Instantiation context">[module.context]</a>), <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a> informs us that
+some specializations in fact have several. My working understanding is
+that the “points of instantiation” defined in <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a> are in fact
+<em>candidate</em> points of instantiation, <em>one</em> of which is
+selected during translation as the <em>actual</em> point of
+instantiation.</p></li>
+<li><p>Points of instantiation for specializations of templated classes
+appear <em>before</em> the constructs which require thir
+instantiation.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">/*P1*/</span><span class="dt">void</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">/*P2*/</span>std<span class="op">::</span>vector<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span> is<span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Compiler learns at P2 that the definition of &#39;std::vector&lt;int&gt;&#39; will need to be synthesized;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">// that synthesized definition is considered to appear at P1.</span></span></code></pre></div></li>
+<li><p>Points of instantiation for specializations of variable templates
+are nowhere specified. One is left to guess that they presumably work
+similarly to static data members of specializations of templated
+classes.</p></li>
+<li><p>The point at the end of the translation unit is always considered
+to be a point of instantiation for a specialization of a templated
+function whose synthesized definition is required. Despite this, there
+exist circumstances in which an implementation <em>must</em> instantiate
+sooner (e.g., in the case of a deduced return type). Is such a program
+IFNDR because it would acquire different semantics if the function were
+instantiated at the end of the translation unit, even if such an
+instantiation is disallowed by constraints imposed elsewhere in the
+Standard?</p></li>
+<li><p>Elsewhere in <a href="https://eel.is/c++draft/temp" title="13 Templates">[temp]</a> (e.g., <a href="https://eel.is/c++draft/temp.inst" title="13.9.2 Implicit instantiation">[temp.inst]</a>), it is made clear
+that the instantiation of a non-defining <em>declaration</em> can happen
+separately from the instantiation of a <em>definition</em>. This is
+nowhere addressed in <a href="https://eel.is/c++draft/temp.point" title="13.8.4.1 Point of instantiation">[temp.point]</a>; as far as I
+can tell, the best source for learning of such matters would be the
+source code for a C++ compiler.</p></li>
+</ul>
+<p>The program of changes hereafter proposed seeks to address such
+shortcomings concurrently with the other issues outlined below.</p>
+<h3 data-number="2.3" id="instantiation-during-constant-evaluation"><span class="header-section-number">2.3</span> Instantiation during constant
+evaluation<a href="#instantiation-during-constant-evaluation" class="self-link"></a></h3>
+<p>Consider the following program:</p>
+<h3 data-number="2.4" id="todo"><span class="header-section-number">2.4</span> TODO<a href="#todo" class="self-link"></a></h3>
 <ul>
 <li>Existing practice: The evaluation of an expression during
 translation can trigger instantiation.</li>
-<li>Review: How the Standard specifies when instantiation can take place
-(point of instantiation).
-<ul>
-<li>Instantiation of declarations vs definitions.</li>
-</ul></li>
 <li>The Reflection connection
 <ul>
 <li>How we solve it: The Evaluation Context</li>
@@ -718,22 +819,22 @@ function explicitly specialized may be specified using a
 
 <div id="example-1" class="example" data-num="1">
 <span>[ <em>Example <a href="#example-1">1</a>:</em> </span>
-<div class="sourceCode" id="cb1"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>template&lt;class T = int&gt; struct A {</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  static int x;</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>};</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>template&lt;class U&gt; void g(U) { }</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; struct A&lt;double&gt; { };        // specialize for T == double</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; struct A&lt;&gt; { };              // specialize for T == int</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; void g(char) { }             // specialize for U == char</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                                        // U is deduced from the parameter type</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; void g&lt;int&gt;(int) { }         // specialize for U == int</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; int A&lt;char&gt;::x = 0;          // specialize for T == char</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>template&lt;class T = int&gt; struct B {</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  static int x;</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>};</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; int B&lt;&gt;::x = 1;              // specialize for T == int</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>template&lt;class T = int&gt; struct A {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  static int x;</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>};</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>template&lt;class U&gt; void g(U) { }</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; struct A&lt;double&gt; { };        // specialize for T == double</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; struct A&lt;&gt; { };              // specialize for T == int</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; void g(char) { }             // specialize for U == char</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                                        // U is deduced from the parameter type</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; void g&lt;int&gt;(int) { }         // specialize for U == int</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; int A&lt;char&gt;::x = 0;          // specialize for T == char</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>template&lt;class T = int&gt; struct B {</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  static int x;</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>};</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>template&lt;&gt; int B&lt;&gt;::x = 1;              // specialize for T == int</span></code></pre></div>
 <span> — <em>end example</em> ]</span>
 </div>
 
@@ -838,17 +939,17 @@ the inheritance relationship between the two classes involved.<span> —
 
 <div id="example-2" class="example" data-num="1">
 <span>[ <em>Example <a href="#example-2">1</a>:</em> </span>
-<div class="sourceCode" id="cb2"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>template&lt;class T&gt; class B { /* ... */ };</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>template&lt;class T&gt; class D : public B&lt;T&gt; { /* ... */ };</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>void f(void*);</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>void f(B&lt;int&gt;*);</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>void g(D&lt;int&gt;* p, D&lt;char&gt;* pp, D&lt;double&gt;* ppp) {</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  f(p);             // instantiation of D&lt;int&gt; required: call f(B&lt;int&gt;*)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  B&lt;char&gt;* q = pp;  // instantiation of D&lt;char&gt; required: convert D&lt;char&gt;* to B&lt;char&gt;*</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  delete ppp;       // instantiation of D&lt;double&gt; required</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>template&lt;class T&gt; class B { /* ... */ };</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>template&lt;class T&gt; class D : public B&lt;T&gt; { /* ... */ };</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>void f(void*);</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>void f(B&lt;int&gt;*);</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>void g(D&lt;int&gt;* p, D&lt;char&gt;* pp, D&lt;double&gt;* ppp) {</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  f(p);             // instantiation of D&lt;int&gt; required: call f(B&lt;int&gt;*)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  B&lt;char&gt;* q = pp;  // instantiation of D&lt;char&gt; required: convert D&lt;char&gt;* to B&lt;char&gt;*</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  delete ppp;       // instantiation of D&lt;double&gt; required</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <span> — <em>end example</em> ]</span>
 </div>
 

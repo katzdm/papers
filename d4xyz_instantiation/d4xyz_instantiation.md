@@ -1,5 +1,5 @@
 ---
-title: "Instantiation"
+title: "Instantiation and Constant Evaluation"
 document: D4xyz
 date: today
 audience: EWG
@@ -12,14 +12,70 @@ tag: templates
 ---
 
 ## Abstract
-
 We argue that the Standard's rules ([temp.point]) for when a specialization may be instantiated are at odds with the behavior exhibited by all known implementations. We then describe why improving the specification for Instantiation unavoidably leads us also to the specification for Constant Evaluation. We describe problems with existing wording, strive to motivate why these problems are worth solving (knowing that the Committee's time is limited), and sketch a framework for how a more robust specification might be shaped.
 
 ## Background
 
+### A brief review
+When a specialization `$S$` is required to be defined and `$S$` is not an explicit specialization, an instantiated definition of `$S$` is synthesized from a definition of the template which `$S$` specializes.
+This synthesized definition is considered to "appear" at some program point in the containing translation unit called the **point of instantiation** of `$S$`.
+Depending on the location of this point of instantiation, declarations may or may not be reachable from the constructs within the instantiated definition, which can affect the semantics and well-formedness of the broader program.
+
+```cpp
+template <typename T>
+constexpr void f() {
+  T t;
+}
+
+int main() {
+  f<struct S>();
+}/*P1*/
+
+struct S {}; /*P2*/
+
+// 'f<S>' is ill-formed if instantiated from P1,
+// but well-formed if instantiated from P2.
+```
+
+Implementations have historically adopted different strategies for selecting points of instantiation. Some compilers instantiate specializations eagerly (i.e., synthesize as soon as the definition is known to be required), while others defer instantiation for as long as possible (i.e., try to wait until all tokens have been parsed before synthesizing any instantiated definitions). The Standard carves out space for each such strategy by enumerating the set of points at which a given specialization is permitted to appear ([temp.point]).
+
+A problem immediately emerges: If an implementation is entitled to synthesize an instantiated definition from any of several program points, and the choice of said point can affect the semantics of the program, then how can the Standard say even whether such programs are valid C++? As it turns out, the Standard does not try: Any program whose well-formedness or semantics depend on a particular point of instantiation being selected from among several allowed options is ill-formed, no diagnostic required. The burden of responsibility for ensuring that the program does not depend on a particular instantiation strategy is thus shifted from the implementer to the user. Alas! in a world with 4+ actively evolving implementations of the language, it could scarcely be any other way.
+
+### Aside: [temp.point] has always been a train wreck=
+Anybody who stares at [temp.point] long enough is likely to conclude that it makes very little sense. A few of my grievances with even the existing scope of specification:
+
+- Whereas every other section of the Standard speaks of a specialization as having a _single_ "point of instantiation" (e.g., [module.context]), [temp.point] informs us that some specializations in fact have several.
+  My working understanding is that the "points of instantiation" defined in [temp.point] are in fact _candidate_ points of instantiation,
+  _one_ of which is selected during translation as the _actual_ point of instantiation.
+- Points of instantiation for specializations of templated classes appear _before_ the constructs which require thir instantiation.
+
+  ```cpp
+  /*P1*/void main() {
+    /*P2*/std::vector<int> is;
+  }
+
+  // Compiler learns at P2 that the definition of 'std::vector<int>' will need to be synthesized;
+  // that synthesized definition is considered to appear at P1.
+  ```
+- Points of instantiation for specializations of variable templates are nowhere specified.
+  One is left to guess that they presumably work similarly to static data members of specializations of templated classes.
+- The point at the end of the translation unit is always considered to be a point of instantiation for a specialization of a templated function whose synthesized
+  definition is required. Despite this, there exist circumstances in which an implementation _must_ instantiate sooner (e.g., in the case of a deduced return type).
+  Is such a program IFNDR because it would acquire different semantics if the function were instantiated at the end of the translation unit, even if such an
+  instantiation is disallowed by constraints imposed elsewhere in the Standard?
+- Elsewhere in [temp] (e.g., [temp.inst]), it is made clear that the instantiation of a non-defining _declaration_ can happen separately from the instantiation of a _definition_.
+  This is nowhere addressed in [temp.point]; as far as I can tell, the best source for learning of such matters would be the source code for a C++ compiler.
+
+The program of changes hereafter proposed seeks to address such shortcomings concurrently with the other issues outlined below.
+
+### Instantiation during constant evaluation
+Consider the following program:
+
+
+
+### TODO
+
 - Existing practice: The evaluation of an expression during translation can trigger instantiation.
-- Review: How the Standard specifies when instantiation can take place (point of instantiation).
-  - Instantiation of declarations vs definitions.
 - The Reflection connection
   - How we solve it: The Evaluation Context
   - Problem: Immediate-escalating expressions
