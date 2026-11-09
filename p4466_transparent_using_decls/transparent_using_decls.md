@@ -1,6 +1,6 @@
 ---
 title: "Selectively transparent `$using-declarator$`s (response to FI-067)"
-document: P4466
+document: P4466R0
 date: today
 audience: SG7, EWG, CWG
 author:
