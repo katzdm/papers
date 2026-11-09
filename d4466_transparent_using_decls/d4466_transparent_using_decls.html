@@ -541,7 +541,7 @@ to FI-067)</h1>
   <tr>
     <td>Document #:</td>
     <td>
-      D4466
+      P4466
     </td>
   </tr>
   <tr>
@@ -671,7 +671,17 @@ shove pieces of <span class="citation" data-cites="P3687R1"><a href="https://wg2
 fourteenth hour, we propose a far more narrow change.</p>
 <h1 data-number="2" id="design"><span class="header-section-number">2</span> Design<a href="#design" class="self-link"></a></h1>
 <h2 data-number="2.1" id="proposed-direction"><span class="header-section-number">2.1</span> Proposed direction<a href="#proposed-direction" class="self-link"></a></h2>
-<p>We propose a narrow carveout to make the following well-formed:</p>
+<p>We propose a narrow carveout to address FI-067: Given
+<code class="sourceCode cpp"><span class="kw">namespace</span> N <span class="op">{</span> <span class="kw">using</span> Q<span class="op">::</span>x<span class="op">;</span> <span class="op">}</span></code>,
+the reflection
+<code class="sourceCode cpp"><span class="op">^^</span>N<span class="op">::</span>x</code>
+is permitted if
+<code class="sourceCode cpp">N<span class="op">::</span>x</code> already
+named <code class="sourceCode cpp">Q<span class="op">::</span>x</code>
+without the
+<code class="sourceCode cpp"><em>using-declarator</em></code> (i.e., we
+flatten inline and unnamed namespaces).</p>
+<p>This makes the following well-formed:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> NS <span class="op">{</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">();</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> NS<span class="op">::</span>f<span class="op">;</span></span>
@@ -727,7 +737,7 @@ fourteenth hour, we propose a far more narrow change.</p>
 <h2 data-number="2.2" id="design-tradeoffs"><span class="header-section-number">2.2</span> Design tradeoffs<a href="#design-tradeoffs" class="self-link"></a></h2>
 <p>Because it will become possible to write the following program:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> NS <span class="op">{</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Inline <span class="op">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">namespace</span> Inline <span class="op">{</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">();</span>  <span class="co">// #1</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>  <span class="co">// namespace Inline</span></span>

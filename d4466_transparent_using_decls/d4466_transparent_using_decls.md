@@ -1,6 +1,6 @@
 ---
 title: "Selectively transparent `$using-declarator$`s (response to FI-067)"
-document: D4466
+document: P4466
 date: today
 audience: SG7, EWG, CWG
 author:
@@ -65,7 +65,9 @@ Entity Proxies would address this comment, but we believe that the concept need 
 # Design
 
 ## Proposed direction
-We propose a narrow carveout to make the following well-formed:
+We propose a narrow carveout to address FI-067: Given `namespace N { using Q::x; }`, the reflection `^^N::x` is permitted if `N::x` already named `Q::x` without the `$using-declarator$` (i.e., we flatten inline and unnamed namespaces).
+
+This makes the following well-formed:
 
 ```cpp
 namespace NS {
@@ -144,7 +146,7 @@ Because it will become possible to write the following program:
 
 ```cpp
 namespace NS {
-namespace Inline {
+inline namespace Inline {
 void f();  // #1
 
 }  // namespace Inline
