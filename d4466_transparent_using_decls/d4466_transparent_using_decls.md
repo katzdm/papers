@@ -1,5 +1,5 @@
 ---
-title: "FI-067: Selectively transparent `$using-declarator$`s"
+title: "Selectively transparent `$using-declarator$`s (response to FI-067)"
 document: D4466
 date: today
 audience: SG7, EWG, CWG
