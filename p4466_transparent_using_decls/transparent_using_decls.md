@@ -139,8 +139,7 @@ constexpr std::meta::info R = ^^Derived::f;
 
 This preserves the syntactic space for reflection over `$using-declarator$`s for C++29 (or whatever), while fixing the painful case pointed out by FI-067.
 
-
-## Design tradeoffs
+# Design tradeoffs
 
 Because it will become possible to write the following program:
 
@@ -161,10 +160,56 @@ static_assert(std::meta::parent_of(^^NS::f) == ^^NS::Inline);  // ok, probably f
 
 The adoption of this paper would make it unlikely, even with the future adoption of an Entity Proxies paper, that the expression `^^NS::f` could ever be made to refer to `#2` instead of `#1`. This could be viewed as "weakening" the power of the reflection operator, since certain information (i.e., the `$using-declarator$`) is "erased" from its view.
 
-On the other hand, we argue that -- for the cases allowed by this paper -- it is unlikely that a user _wants_ `^^NS::f` to refer to the `$using-declarator$`: it is far more likely that the user is trying to take the reflection of `void f()`, and the `$using-declarator$` is a mere "implementation detail" of how a library author "surfaced" `void f()` to the user. This very well may, therefore, only increase the ergonomics of the reflection operator.
+On the other hand, we argue that -- for the cases allowed by this paper -- it is unlikely that a user _wants_ `^^NS::f` to refer to the `$using-declarator$`: it is far more likely that the user is trying to take the reflection of `void f()`, and the `$using-declarator$` is a mere "implementation detail" of how a library author "surfaced" `void f()` to the user. Futhermore, as explained in next section, this approach limits possiblity of ODR violations in program that mixes uses of `include` and `import`.
+Therefore, we believe, that this change, will only increase usability reflection operator. 
 
 It's important to note that although `^^NS::f` might never refer to the `$using-declarator$`, the `$using-declarator$` need not be forever invisible to Reflection: It still ought to be possible (and desirable) for `std::meta::members_of(^^NS, Ctx)` (for some `Ctx`) to surface a representation of the `$using-declarator$` in the resulting `std::vector<std::meta::info>`. We therefore get the best of both worlds: `^^NS::f` refers to the underlying function (which is probably what the user intends), while the `$using-declarator$`, through which that function was found during lookup for `NS::f`, remains observable via the more structured, graph-walking introspection facilitated by `std::meta::members_of`.
 
+# Entitiy proxy and mixed `include` and `import` uses
+
+The carveout proposed in this paper, seem to be necessary to prevent ODR violations caused by `^^std::string` producing different
+entity, depending whether `#include` or `import` is used. As illustartion, given following simplified implementation of the standard
+library `include` and corresponding section of `std` module interface:
+
+```cpp
+/// header <string>
+namespace std { inline namespace __v1 {
+  struct string; // #1
+}}
+```
+
+```cpp
+// std module interface
+export module std;
+
+namespace std {
+  using std::string; #2  
+}
+```
+
+The result of the `^^std::string` in line `#4` and the value of `#5` in following will differ depending
+on treatment of `#include` at line `#3`, and would represent:
+
+1. class declared at `#1` if textual inclusion is used
+2. unsing declared at `#2` if `#include` is translated to `import std`.
+
+```cpp
+// header foo.h
+#include <meta>
+#include <string> #3
+
+inline int foo() {
+  constexpr std::meta::info string_info = ^^std::string;  #4
+  constexpr std::size_t = members_of(parent_of(string_info)); #5
+}
+```
+
+This would lead to different defintions of `foo` and ODR violations if program links together two
+TUs that include `foo.h` but are resolve `#include <string>` differntly. This esentially breaks
+compability between `#include` and `import` of standard library.
+
+With the changes proposed in this paper, the `^^std::string` will always reprsent class declared
+at `#1`, preventing such issues.
 
 # Wording
 Modify [expr.reflect]/5 as follows:
