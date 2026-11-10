@@ -219,7 +219,7 @@ Modify [expr.reflect]/5 as follows:
 ::: wording
 [5]{.pnum} If a `$reflect-expression$` _R_ matches the form `^^$reflection-name$`, it is interpreted as such; the identifier is looked up and the representation of _R_ is determined as follows:
 
-- [#.#]{.pnum} If lookup finds a declaration [_D_]{.add} that replaced a `$using-declarator$` [_U_]{.add} during a single search ([basic.lookup.general], [namespace.udecl]), [_R_ is ill-formed]{.rm} [the target scope of _U_ shall be associated with a namespace, and each scope (if any) that that contains exactly one of _D_ or _U_ shall be associated with an inline or unnamed namespace ([namespace.def.general], [namespace.unnamed])]{.add}.
+- [#.#]{.pnum} If lookup finds a declaration [_D_]{.add} that replaced a `$using-declarator$` [_U_]{.add} during a single search ([basic.lookup.general], [namespace.udecl]), [_R_ is ill-formed]{.rm} [the target scope of _U_ shall be associated with a namespace, and each scope (if any) that contains exactly one of _D_ or _U_ shall be associated with an inline or unnamed namespace ([namespace.def.general], [namespace.unnamed])]{.add}.
 - [#.#]{.pnum} [Otherwise, if]{.rm} [If]{.add} lookup finds a namespace alias ([namespace.alias]), all declarations found by name lookup shall have the same target scope, and _R_ represents the namespace alias.
 - [#.#]{.pnum} Otherwise, if lookup finds a namespace ([basic.namespace]), _R_ represents that namespace.
 - [#.#]{.pnum} Otherwise, [...]
