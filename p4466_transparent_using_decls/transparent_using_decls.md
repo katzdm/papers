@@ -213,6 +213,17 @@ In the former case, `^^std::string` at `#4` will represent the class declared at
 
 The change proposed by this paper fixes the glitch: `^^std::string` will, in all cases, be a well-formed expression whose result represents the class declared at `#1` (even in the presence of a future Entity Proxies proposal).
 
+# Implementation experience
+
+Ville Voutilainen was kind enough to produce an implementation of our proposed rule in his "P4324" fork of GCC. This can be found on Godbolt (see e.g., [here](https://godbolt.org/z/TGxEe4hbn) and [here](https://godbolt.org/z/nr3sdWWeq)).
+
+Separately, we were told by Marek Polacek (who led the implementation of C++26 Reflection for GCC):
+
+> The GCC patch should not be that complicated for this.
+
+The authors hold Marek in high enough regard that this would have been "implementation experience" enough for us, but we are nevertheless thankful to Ville for his efforts.
+
+
 # Wording
 Modify [expr.reflect]/5 as follows:
 
