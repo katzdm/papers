@@ -87,7 +87,7 @@ namespace NS {
 inline namespace Inline {
 void f();
 
-}  // namesapce Inline
+}  // inline namesapce Inline
 
 using Inline::f;
 }  // namespace NS
@@ -148,7 +148,7 @@ namespace NS {
 inline namespace Inline {
 void f();  // #1
 
-}  // namespace Inline
+}  // inline namespace Inline
 
 using Inline::f;  // #2
 
@@ -160,56 +160,58 @@ static_assert(std::meta::parent_of(^^NS::f) == ^^NS::Inline);  // ok, probably f
 
 The adoption of this paper would make it unlikely, even with the future adoption of an Entity Proxies paper, that the expression `^^NS::f` could ever be made to refer to `#2` instead of `#1`. This could be viewed as "weakening" the power of the reflection operator, since certain information (i.e., the `$using-declarator$`) is "erased" from its view.
 
-On the other hand, we argue that -- for the cases allowed by this paper -- it is unlikely that a user _wants_ `^^NS::f` to refer to the `$using-declarator$`: it is far more likely that the user is trying to take the reflection of `void f()`, and the `$using-declarator$` is a mere "implementation detail" of how a library author "surfaced" `void f()` to the user. Futhermore, as explained in next section, this approach limits possiblity of ODR violations in program that mixes uses of `include` and `import`.
-Therefore, we believe, that this change, will only increase usability reflection operator. 
+On the other hand, we argue that -- for the cases allowed by this paper -- it is unlikely that a user _wants_ `^^NS::f` to refer to the `$using-declarator$`: it is far more likely that the user is trying to take the reflection of `void f()`, and the `$using-declarator$` is a mere "implementation detail" of how a library author "surfaced" `void f()` to the user. Futhermore, as explained in next section, this approach reduces the possiblity of ODR violations in programs that mix uses of `#include` and `import`: we therefore believe that the proposed change will only increase the usability of the reflection operator.
 
 It's important to note that although `^^NS::f` might never refer to the `$using-declarator$`, the `$using-declarator$` need not be forever invisible to Reflection: It still ought to be possible (and desirable) for `std::meta::members_of(^^NS, Ctx)` (for some `Ctx`) to surface a representation of the `$using-declarator$` in the resulting `std::vector<std::meta::info>`. We therefore get the best of both worlds: `^^NS::f` refers to the underlying function (which is probably what the user intends), while the `$using-declarator$`, through which that function was found during lookup for `NS::f`, remains observable via the more structured, graph-walking introspection facilitated by `std::meta::members_of`.
 
-# Entitiy proxy and mixed `include` and `import` uses
+# Addressing `^^` interaction with mixed `#include` and `import` usage
 
-The carveout proposed in this paper, seem to be necessary to prevent ODR violations caused by `^^std::string` producing different
-entity, depending whether `#include` or `import` is used. As illustartion, given following simplified implementation of the standard
-library `include` and corresponding section of `std` module interface:
+Suppose that an implementation of the Standard Library surfaces the `std::string` class from the `<string>` header as follows:
 
 ```cpp
-/// header <string>
-namespace std { inline namespace __v1 {
-  struct string; // #1
-}}
+namespace std {
+inline namespace __v1 {
+
+struct string;  // #1
+// ...
+
+}  // inline namespace __v1
+}  // namespace std
 ```
 
+The `std::string` class is then exported from the `std` module as follows:
+
 ```cpp
-// std module interface
 export module std;
 
 namespace std {
-  using std::string; #2  
+using std::string;  // #2
+// ...
+
 }
 ```
 
-The result of the `^^std::string` in line `#4` and the value of `#5` in following will differ depending
-on treatment of `#include` at line `#3`, and would represent:
-
-1. class declared at `#1` if textual inclusion is used
-2. unsing declared at `#2` if `#include` is translated to `import std`.
+A user might then write the following innocuous code in some `foo.h`:
 
 ```cpp
-// header foo.h
+// foo.h
 #include <meta>
-#include <string> #3
+#include <string>  // #3
 
 inline int foo() {
-  constexpr std::meta::info string_info = ^^std::string;  #4
-  constexpr std::size_t count = members_of(parent_of(string_info)); #5
+  constexpr std::meta::info string_info = ^^std::string;  // #4
+  // ...
 }
 ```
 
-This would lead to different defintions of `foo` and ODR violations if program links together two
-TUs that include `foo.h` but are resolve `#include <string>` differntly. This esentially breaks
-compability between `#include` and `import` of standard library.
+The C++26 DIS says that whether a program `#include`ing `foo.h` can be well-formed depends on whether the implementation interprets the `#include` statement at `#3` by
 
-With the changes proposed in this paper, the `^^std::string` will always reprsent class declared
-at `#1`, preventing such issues.
+- performing a naive textual inclusion or
+- translating the directive to `import std;`.
+
+In the former case, `^^std::string` at `#4` will represent the class declared at `#1`; in the latter case, `^^std::string` is ill-formed because the operand names a `$using-declarator$`. The situation grows perhaps worse if we adopt the Entity Proxies proposal (or something like it) in the future: `^^std::string` would, in the latter case, represent the entity proxy introduced at `#2`. A program that links two TUs that `#include "foo.h"`, but resolve `#include <string>` differently, would then be exposed to an ODR violation, essentially breaking compatibility between `#include`s and `import`s of the standard library.
+
+The change proposed by this paper fixes the glitch: `^^std::string` will, in all cases, be a well-formed expression whose result represents the class declared at `#1` (even in the presence of a future Entity Proxies proposal).
 
 # Wording
 Modify [expr.reflect]/5 as follows:
@@ -217,7 +219,7 @@ Modify [expr.reflect]/5 as follows:
 ::: wording
 [5]{.pnum} If a `$reflect-expression$` _R_ matches the form `^^$reflection-name$`, it is interpreted as such; the identifier is looked up and the representation of _R_ is determined as follows:
 
-- [#.#]{.pnum} If lookup finds a declaration [_D_]{.add} that replaced a `$using-declarator$` [_U_]{.add} during a single search ([basic.lookup.general], [namespace.udecl]), [_R_ is ill-formed unless]{.rm} [the target scope of _U_ shall be associated with a namespace, and each scope (if any) that intervenes between the target scope of _U_ and a point whose immediate scope is the target scope of _D_ shall be associated with an inline or unnamed namespace ([namespace.def.general, namespace.unnamed])]{.add}.
+- [#.#]{.pnum} If lookup finds a declaration [_D_]{.add} that replaced a `$using-declarator$` [_U_]{.add} during a single search ([basic.lookup.general], [namespace.udecl]), [_R_ is ill-formed]{.rm} [the target scope of _U_ shall be associated with a namespace, and each scope (if any) that that contains exactly one of _D_ or _U_ shall be associated with an inline or unnamed namespace ([namespace.def.general], [namespace.unnamed])]{.add}.
 - [#.#]{.pnum} [Otherwise, if]{.rm} [If]{.add} lookup finds a namespace alias ([namespace.alias]), all declarations found by name lookup shall have the same target scope, and _R_ represents the namespace alias.
 - [#.#]{.pnum} Otherwise, if lookup finds a namespace ([basic.namespace]), _R_ represents that namespace.
 - [#.#]{.pnum} Otherwise, [...]

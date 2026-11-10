@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2026-11-09" />
+  <meta name="dcterms.date" content="2026-11-10" />
   <title>Selectively transparent `$using-declarator$`s (response to
 FI-067)</title>
   <style>
@@ -548,7 +548,7 @@ to FI-067)</h1>
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2026-11-09</td>
+    <td>2026-11-10</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -581,10 +581,16 @@ to FI-067)</h1>
 <li><a href="#design" id="toc-design"><span class="toc-section-number">2</span> Design</a>
 <ul>
 <li><a href="#proposed-direction" id="toc-proposed-direction"><span class="toc-section-number">2.1</span> Proposed direction</a></li>
-<li><a href="#design-tradeoffs" id="toc-design-tradeoffs"><span class="toc-section-number">2.2</span> Design tradeoffs</a></li>
 </ul></li>
-<li><a href="#wording" id="toc-wording"><span class="toc-section-number">3</span> Wording</a></li>
-<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">4</span> References</a></li>
+<li><a href="#design-tradeoffs" id="toc-design-tradeoffs"><span class="toc-section-number">3</span> Design tradeoffs</a></li>
+<li><a href="#addressing-interaction-with-mixed-include-and-import-usage" id="toc-addressing-interaction-with-mixed-include-and-import-usage"><span class="toc-section-number">4</span> Addressing
+<code class="sourceCode cpp"><span class="op">^^</span></code>
+interaction with mixed
+<code class="sourceCode cpp"><span class="pp">#include</span></code> and
+<code class="sourceCode cpp"><span class="kw">import</span></code>
+usage</a></li>
+<li><a href="#wording" id="toc-wording"><span class="toc-section-number">5</span> Wording</a></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">6</span> References</a></li>
 </ul>
 </div>
 <h1 data-number="1" id="background"><span class="header-section-number">1</span> Background<a href="#background" class="self-link"></a></h1>
@@ -697,7 +703,7 @@ flatten inline and unnamed namespaces).</p>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">namespace</span> Inline <span class="op">{</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">();</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>  <span class="co">// namesapce Inline</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>  <span class="co">// inline namesapce Inline</span></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> Inline<span class="op">::</span>f<span class="op">;</span></span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>  <span class="co">// namespace NS</span></span>
@@ -736,13 +742,13 @@ flatten inline and unnamed namespaces).</p>
 <p>This preserves the syntactic space for reflection over
 <code class="sourceCode cpp"><em>using-declarator</em></code>s for C++29
 (or whatever), while fixing the painful case pointed out by FI-067.</p>
-<h2 data-number="2.2" id="design-tradeoffs"><span class="header-section-number">2.2</span> Design tradeoffs<a href="#design-tradeoffs" class="self-link"></a></h2>
+<h1 data-number="3" id="design-tradeoffs"><span class="header-section-number">3</span> Design tradeoffs<a href="#design-tradeoffs" class="self-link"></a></h1>
 <p>Because it will become possible to write the following program:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> NS <span class="op">{</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">namespace</span> Inline <span class="op">{</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">();</span>  <span class="co">// #1</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>  <span class="co">// namespace Inline</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>  <span class="co">// inline namespace Inline</span></span>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> Inline<span class="op">::</span>f<span class="op">;</span>  <span class="co">// #2</span></span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
@@ -770,8 +776,12 @@ more likely that the user is trying to take the reflection of
 and the <code class="sourceCode cpp"><em>using-declarator</em></code> is
 a mere “implementation detail” of how a library author “surfaced”
 <code class="sourceCode cpp"><span class="dt">void</span> f<span class="op">()</span></code>
-to the user. This very well may, therefore, only increase the ergonomics
-of the reflection operator.</p>
+to the user. Futhermore, as explained in next section, this approach
+reduces the possiblity of ODR violations in programs that mix uses of
+<code class="sourceCode cpp"><span class="pp">#include</span></code> and
+<code class="sourceCode cpp"><span class="kw">import</span></code>: we
+therefore believe that the proposed change will only increase the
+usability of the reflection operator.</p>
 <p>It’s important to note that although
 <code class="sourceCode cpp"><span class="op">^^</span>NS<span class="op">::</span>f</code>
 might never refer to the
@@ -795,7 +805,88 @@ which that function was found during lookup for
 remains observable via the more structured, graph-walking introspection
 facilitated by
 <code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>members_of</code>.</p>
-<h1 data-number="3" id="wording"><span class="header-section-number">3</span> Wording<a href="#wording" class="self-link"></a></h1>
+<h1 data-number="4" id="addressing-interaction-with-mixed-include-and-import-usage"><span class="header-section-number">4</span> Addressing
+<code class="sourceCode cpp"><span class="op">^^</span></code>
+interaction with mixed
+<code class="sourceCode cpp"><span class="pp">#include</span></code> and
+<code class="sourceCode cpp"><span class="kw">import</span></code>
+usage<a href="#addressing-interaction-with-mixed-include-and-import-usage" class="self-link"></a></h1>
+<p>Suppose that an implementation of the Standard Library surfaces the
+<code class="sourceCode cpp">std<span class="op">::</span>string</code>
+class from the
+<code class="sourceCode cpp"><span class="op">&lt;</span>string<span class="op">&gt;</span></code>
+header as follows:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> std <span class="op">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="kw">namespace</span> __v1 <span class="op">{</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> string<span class="op">;</span>  <span class="co">// #1</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">// ...</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>  <span class="co">// inline namespace __v1</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>  <span class="co">// namespace std</span></span></code></pre></div>
+<p>The
+<code class="sourceCode cpp">std<span class="op">::</span>string</code>
+class is then exported from the <code class="sourceCode cpp">std</code>
+module as follows:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">export</span> <span class="kw">module</span> std<span class="op">;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> std <span class="op">{</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> std<span class="op">::</span>string<span class="op">;</span>  <span class="co">// #2</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">// ...</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>A user might then write the following innocuous code in some
+<code class="sourceCode cpp">foo<span class="op">.</span>h</code>:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// foo.h</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;meta&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string&gt;</span><span class="pp">  </span><span class="co">// #3</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="dt">int</span> foo<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constexpr</span> std<span class="op">::</span>meta<span class="op">::</span>info string_info <span class="op">=</span> <span class="op">^^</span>std<span class="op">::</span>string<span class="op">;</span>  <span class="co">// #4</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The C++26 DIS says that whether a program
+<code class="sourceCode cpp"><span class="pp">#include</span></code>ing
+<code class="sourceCode cpp">foo<span class="op">.</span>h</code> can be
+well-formed depends on whether the implementation interprets the
+<code class="sourceCode cpp"><span class="pp">#include</span></code>
+statement at
+<code class="sourceCode cpp"><span class="pp">#3</span></code> by</p>
+<ul>
+<li>performing a naive textual inclusion or</li>
+<li>translating the directive to
+<code class="sourceCode cpp"><span class="kw">import</span> std<span class="op">;</span></code>.</li>
+</ul>
+<p>In the former case,
+<code class="sourceCode cpp"><span class="op">^^</span>std<span class="op">::</span>string</code>
+at <code class="sourceCode cpp"><span class="pp">#4</span></code> will
+represent the class declared at
+<code class="sourceCode cpp"><span class="pp">#1</span></code>; in the
+latter case,
+<code class="sourceCode cpp"><span class="op">^^</span>std<span class="op">::</span>string</code>
+is ill-formed because the operand names a
+<code class="sourceCode cpp"><em>using-declarator</em></code>. The
+situation grows perhaps worse if we adopt the Entity Proxies proposal
+(or something like it) in the future:
+<code class="sourceCode cpp"><span class="op">^^</span>std<span class="op">::</span>string</code>
+would, in the latter case, represent the entity proxy introduced at
+<code class="sourceCode cpp"><span class="pp">#2</span></code>. A
+program that links two TUs that
+<code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&quot;foo.h&quot;</span></code>,
+but resolve
+<code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;string&gt;</span></code>
+differently, would then be exposed to an ODR violation, essentially
+breaking compatibility between
+<code class="sourceCode cpp"><span class="pp">#include</span></code>s
+and <code class="sourceCode cpp"><span class="kw">import</span></code>s
+of the standard library.</p>
+<p>The change proposed by this paper fixes the glitch:
+<code class="sourceCode cpp"><span class="op">^^</span>std<span class="op">::</span>string</code>
+will, in all cases, be a well-formed expression whose result represents
+the class declared at
+<code class="sourceCode cpp"><span class="pp">#1</span></code> (even in
+the presence of a future Entity Proxies proposal).</p>
+<h1 data-number="5" id="wording"><span class="header-section-number">5</span> Wording<a href="#wording" class="self-link"></a></h1>
 <p>Modify <a href="https://eel.is/c++draft/expr.reflect#5" title="7.6.2.10 The reflection operator, paragraph 5">[expr.reflect]/5</a>
 as follows:</p>
 <div class="wording">
@@ -810,13 +901,11 @@ representation of <em>R</em> is determined as follows:</p>
 <span class="add" style="color: #006e28"><ins><em>D</em></ins></span>
 that replaced a
 <code class="sourceCode cpp"><em>using-declarator</em></code> <span class="add" style="color: #006e28"><ins><em>U</em></ins></span> during a
-single search (<a href="https://eel.is/c++draft/basic.lookup.general" title="6.5.1 General">[basic.lookup.general]</a>, <a href="https://eel.is/c++draft/namespace.udecl" title="9.10 The using declaration">[namespace.udecl]</a>), <span class="rm" style="color: #bf0303"><del><em>R</em> is ill-formed
-unless</del></span> <span class="add" style="color: #006e28"><ins>the
-target scope of <em>U</em> shall be associated with a namespace, and
-each scope (if any) that intervenes between the target scope of
-<em>U</em> and a point whose immediate scope is the target scope of
-<em>D</em> shall be associated with an inline or unnamed namespace
-([namespace.def.general, namespace.unnamed])</ins></span>.</li>
+single search (<a href="https://eel.is/c++draft/basic.lookup.general" title="6.5.1 General">[basic.lookup.general]</a>, <a href="https://eel.is/c++draft/namespace.udecl" title="9.10 The using declaration">[namespace.udecl]</a>), <span class="rm" style="color: #bf0303"><del><em>R</em> is
+ill-formed</del></span> <span class="add" style="color: #006e28"><ins>the target scope of <em>U</em> shall be
+associated with a namespace, and each scope (if any) that that contains
+exactly one of <em>D</em> or <em>U</em> shall be associated with an
+inline or unnamed namespace (<a href="https://eel.is/c++draft/namespace.def.general" title="9.9.2.1 General">[namespace.def.general]</a>, <a href="https://eel.is/c++draft/namespace.unnamed" title="9.9.2.2 Unnamed namespaces">[namespace.unnamed]</a>)</ins></span>.</li>
 <li><span class="marginalizedparent"><a href="#pnum-3" id="pnum-3" class="marginalized">(5.2)</a></span> <span class="rm" style="color: #bf0303"><del>Otherwise, if</del></span> <span class="add" style="color: #006e28"><ins>If</ins></span> lookup finds a namespace
 alias (<a href="https://eel.is/c++draft/namespace.alias" title="9.9.3 Namespace alias">[namespace.alias]</a>), all declarations
 found by name lookup shall have the same target scope, and <em>R</em>
@@ -827,7 +916,7 @@ that namespace.</li>
 <li><span class="marginalizedparent"><a href="#pnum-5" id="pnum-5" class="marginalized">(5.4)</a></span> Otherwise, […]</li>
 </ul>
 </div>
-<h1 data-number="4" id="bibliography"><span class="header-section-number">4</span> References<a href="#bibliography" class="self-link"></a></h1>
+<h1 data-number="6" id="bibliography"><span class="header-section-number">6</span> References<a href="#bibliography" class="self-link"></a></h1>
 <div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
 <div id="ref-P2996R13" class="csl-entry" role="listitem">
 [P2996R13] Barry Revzin, Wyatt Childers, Peter Dimov, Andrew Sutton,
