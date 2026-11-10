@@ -200,7 +200,7 @@ on treatment of `#include` at line `#3`, and would represent:
 
 inline int foo() {
   constexpr std::meta::info string_info = ^^std::string;  #4
-  constexpr std::size_t = members_of(parent_of(string_info)); #5
+  constexpr std::size_t count = members_of(parent_of(string_info)); #5
 }
 ```
 
