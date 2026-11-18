@@ -1,6 +1,6 @@
 ---
 title: "Selectively transparent `$using-declarator$`s (response to FI-067)"
-document: P4466R0
+document: D4466R1
 date: today
 audience: SG7, EWG, CWG
 author:
@@ -225,12 +225,57 @@ The authors hold Marek in high enough regard that this would have been "implemen
 
 
 # Wording
+Add a new paragraph to [namespace.udecl]:
+
+::: wording
+::: add
+[\*]{.pnum} A `$using-declarator$` _U_ is _reflection-transparent_ if
+
+- [\*.#]{.pnum} _U_ inhabits a scope associated with a namespace and
+- [\*.#]{.pnum} for each declaration _D_ named by _U_,
+  - [\*.#.#]{.pnum} the target scope of _U_ contains _D_ and
+  - [\*.#.#]{.pnum} each scope (if any) that contains _D_ but does not contain _U_ is associated with an inline or unnamed namespace.
+
+::: example
+```cpp
+namespace NS {
+enum Enum { E1 };
+using Enum::E1;  // not reflection-transparent
+
+inline namespace Inline {
+void f();
+}
+inline namespace Sibling {
+using Inline::f;  // not reflection-transparent
+}
+using Sibling::f;  // reflection-transparent
+
+void g();
+using NS::g;  // reflection-transparent
+inline namespace Inline {
+using NS::g;  // not reflection-transparent
+}
+}
+
+constexpr auto R1 = ^^NS::f;  // OK
+constexpr auto R2 = ^^NS::g;  // OK
+
+constexpr auto R3 = ^^NS::E1; // error: using-declarator is not reflection-transparent
+constexpr auto R4 = ^^NS::Sibling::f;  // error: using-declarator is not reflection-transparent
+constexpr auto R5 = ^^NS::Inline::g;  // error: using-declarator is not reflection-transparent
+```
+
+:::
+:::
+:::
+
+
 Modify [expr.reflect]/5 as follows:
 
 ::: wording
 [5]{.pnum} If a `$reflect-expression$` _R_ matches the form `^^$reflection-name$`, it is interpreted as such; the identifier is looked up and the representation of _R_ is determined as follows:
 
-- [#.#]{.pnum} If lookup finds a declaration [_D_]{.add} that replaced a `$using-declarator$` [_U_]{.add} during a single search ([basic.lookup.general], [namespace.udecl]), [_R_ is ill-formed]{.rm} [the target scope of _U_ shall be associated with a namespace, and each scope (if any) that contains exactly one of _D_ or _U_ shall be associated with an inline or unnamed namespace ([namespace.def.general], [namespace.unnamed])]{.add}.
+- [#.#]{.pnum} If lookup finds a declaration [_D_]{.add} that replaced a `$using-declarator$` [_U_]{.add} during a single search ([basic.lookup.general], [namespace.udecl]), [_R_ is ill-formed]{.rm} [_U_ shall be reflection-transparent ([namespace.udecl])]{.add}.
 - [#.#]{.pnum} [Otherwise, if]{.rm} [If]{.add} lookup finds a namespace alias ([namespace.alias]), all declarations found by name lookup shall have the same target scope, and _R_ represents the namespace alias.
 - [#.#]{.pnum} Otherwise, if lookup finds a namespace ([basic.namespace]), _R_ represents that namespace.
 - [#.#]{.pnum} Otherwise, [...]
