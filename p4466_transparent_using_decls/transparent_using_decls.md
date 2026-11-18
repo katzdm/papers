@@ -233,8 +233,8 @@ Add a new paragraph to [namespace.udecl]:
 
 - [\*.#]{.pnum} _U_ inhabits a scope associated with a namespace and
 - [\*.#]{.pnum} for each declaration _D_ named by _U_,
-  - [\*.#.#]{.pnum} the target scope of _U_ contains _D_ and
-  - [\*.#.#]{.pnum} each scope (if any) that contains _D_ but does not contain _U_ is associated with an inline or unnamed namespace.
+  - [\*.#.#]{.pnum} the target scope of _U_ is or contains the target scope of _D_ and
+  - [\*.#.#]{.pnum} each scope (if any) that intervenes between the locus of _U_ and the target scope of _D_ is associated with an inline or unnamed namespace.
 
 ::: example
 ```cpp
