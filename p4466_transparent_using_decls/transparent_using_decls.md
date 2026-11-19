@@ -1,8 +1,8 @@
 ---
 title: "Selectively transparent `$using-declarator$`s (response to FI-067)"
-document: D4466R1
+document: D4466R2
 date: today
-audience: SG7, EWG, CWG
+audience: EWG, CWG
 author:
     - name: Dan Katz
       email: <katzdm@gmail.com>
@@ -213,6 +213,48 @@ In the former case, `^^std::string` at `#4` will represent the class declared at
 
 The change proposed by this paper fixes the glitch: `^^std::string` will, in all cases, be a well-formed expression whose result represents the class declared at `#1` (even in the presence of a future Entity Proxies proposal).
 
+# A note on enumerators
+
+During CWG wording review, it was pointed out that our guiding design principle, i.e.,
+
+> Given `namespace N { using Q::x; }`, the reflection `^^N::x` is permitted if `N::x` already named `Q::x` without the `$using-declarator$` (i.e., we flatten inline and unnamed namespaces).
+
+falls short when considering unscoped enumerators. What should be done with the following program?
+
+```cpp
+namespace NS {
+enum Enum1 { E1 };
+enum Enum2 { E2 };
+
+using Enum::E1;  // reflection-transparent?
+using enum Enum2;  // formally introduces 'using Enum2::E2'; reflection-transparent?
+}
+
+constexpr auto R1 = ^^NS::E1;  // OK or error?
+constexpr auto R2 = ^^NS::E2;  // OK or error?
+```
+
+Although our guiding principle suggests that `^^NS::E1` and `^^NS::E2` should be well-formed (i.e., because the qualified lookups for their operands would still succeed if the `$using-declarator$`s were ignored), we have very little motivation to address this case at this time. We would rather wait until the full Entity Proxies design materializes before deciding whether such expressions should represent entity proxies introduced by `$using-declarator$`s or whether they should represent the underlying enumerators.
+
+Leaving the expressions ill-formed for now gives us the freedom to decide this for C++29; that is, therefore, our preference. Reflections of such enumerators can still be obtained by writing either `^^NS::Enum1::E1` (i.e., fully qualified) or `reflect_constant(NS::E1)`.
+
+
+## `std::meta::operators`
+
+The `std::meta::operators` enum is defined in [meta.reflection.operators] as follows:
+
+```cpp
+enum class operators {
+  op_new,
+  op_delete,
+  // ...
+};
+using enum operators;
+```
+
+A somewhat unfortunate side-effect is, therefore, that the expression `^^std::meta::op_plus` ill-formed. This came up in CWG wording review, but it's worth pointing out that this is already the status quo in the C++26 DIS (regardless of whether you find `std::meta::op_plus` through the `std` module or directly through `<meta>`). As with the example above, reflections of such enumerators can still be obtained by writing either `std::meta::operators::op_plus` or `reflect_constant(std::meta::op_plus)`.
+
+
 # Implementation experience
 
 Ville Voutilainen was kind enough to produce an implementation of our proposed rule in his "P4324" fork of GCC. This can be found on Godbolt (see e.g., [here](https://godbolt.org/z/TGxEe4hbn) and [here](https://godbolt.org/z/nr3sdWWeq)).
@@ -239,8 +281,11 @@ Add a new paragraph to [namespace.udecl]:
 ::: example
 ```cpp
 namespace NS {
-enum Enum { E1 };
+enum class Enum1 { E1 };
 using Enum::E1;  // not reflection-transparent
+
+enum Enum2 { E2 };
+using Enum::E2;  // not reflection-transparent
 
 inline namespace Inline {
 void f();
@@ -261,8 +306,9 @@ constexpr auto R1 = ^^NS::f;  // OK
 constexpr auto R2 = ^^NS::g;  // OK
 
 constexpr auto R3 = ^^NS::E1; // error: using-declarator is not reflection-transparent
-constexpr auto R4 = ^^NS::Sibling::f;  // error: using-declarator is not reflection-transparent
-constexpr auto R5 = ^^NS::Inline::g;  // error: using-declarator is not reflection-transparent
+constexpr auto R4 = ^^NS::E2; // error: using-declarator is not reflection-transparent
+constexpr auto R5 = ^^NS::Sibling::f;  // error: using-declarator is not reflection-transparent
+constexpr auto R6 = ^^NS::Inline::g;  // error: using-declarator is not reflection-transparent
 ```
 
 :::
@@ -275,7 +321,7 @@ Modify [expr.reflect]/5 as follows:
 ::: wording
 [5]{.pnum} If a `$reflect-expression$` _R_ matches the form `^^$reflection-name$`, it is interpreted as such; the identifier is looked up and the representation of _R_ is determined as follows:
 
-- [#.#]{.pnum} If lookup finds a declaration [_D_]{.add} that replaced a `$using-declarator$` [_U_]{.add} during a single search ([basic.lookup.general], [namespace.udecl]), [_R_ is ill-formed]{.rm} [_U_ shall be reflection-transparent ([namespace.udecl])]{.add}.
+- [#.#]{.pnum} If lookup finds a declaration that replaced a `$using-declarator$` [_U_]{.add} during a single search ([basic.lookup.general] [,]{.rm} [[namespace.udecl]]{.rm}), [_R_ is ill-formed]{.rm} [_U_ shall be reflection-transparent ([namespace.udecl])]{.add}.
 - [#.#]{.pnum} [Otherwise, if]{.rm} [If]{.add} lookup finds a namespace alias ([namespace.alias]), all declarations found by name lookup shall have the same target scope, and _R_ represents the namespace alias.
 - [#.#]{.pnum} Otherwise, if lookup finds a namespace ([basic.namespace]), _R_ represents that namespace.
 - [#.#]{.pnum} Otherwise, [...]

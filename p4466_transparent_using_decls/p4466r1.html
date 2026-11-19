@@ -1575,7 +1575,7 @@ to FI-067)</h1>
     <td>Document #:</td>
     <td>
       <span class="document-info">
-        <span>D4466R1</span>
+        <span>P4466R1</span>
       <a class="document-link" href="https://wg21.link/P4466">Latest</a>
       <a class="document-link" href="https://wg21.link/P4466/status">Status</a>
       </span>
@@ -1592,7 +1592,7 @@ to FI-067)</h1>
   <tr>
     <td style="vertical-align:top">Audience:</td>
     <td>
-      SG7, EWG, CWG<br>
+      EWG, CWG<br>
     </td>
   </tr>
   <tr>
@@ -1630,10 +1630,16 @@ interaction with mixed
 <code class="sourceCode cpp"><span class="pp">#include</span></code> and
 <code class="sourceCode cpp"><span class="kw">import</span></code>
 usage</a></li>
-<li><a href="#implementation-experience" id="toc-implementation-experience"><span class="toc-section-number">5</span> Implementation experience</a></li>
-<li><a href="#wording" id="toc-wording"><span class="toc-section-number">6</span> Wording</a></li>
-<li><a href="#acknowledgments" id="toc-acknowledgments"><span class="toc-section-number">7</span> Acknowledgments</a></li>
-<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">8</span> References</a></li>
+<li><a href="#a-note-on-enumerators" id="toc-a-note-on-enumerators"><span class="toc-section-number">5</span>
+A note on enumerators</a>
+<ul>
+<li><a href="#stdmetaoperators" id="toc-stdmetaoperators"><span class="toc-section-number">5.1</span>
+<code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>operators</code></a></li>
+</ul></li>
+<li><a href="#implementation-experience" id="toc-implementation-experience"><span class="toc-section-number">6</span> Implementation experience</a></li>
+<li><a href="#wording" id="toc-wording"><span class="toc-section-number">7</span> Wording</a></li>
+<li><a href="#acknowledgments" id="toc-acknowledgments"><span class="toc-section-number">8</span> Acknowledgments</a></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">9</span> References</a></li>
 </ul>
 </nav>
 <h1 data-number="1" id="background"><span class="header-section-number">1</span> Background<a href="#background" class="self-link"></a></h1>
@@ -1929,7 +1935,79 @@ will, in all cases, be a well-formed expression whose result represents
 the class declared at
 <code class="sourceCode cpp"><span class="pp">#1</span></code> (even in
 the presence of a future Entity Proxies proposal).</p>
-<h1 data-number="5" id="implementation-experience"><span class="header-section-number">5</span> Implementation experience<a href="#implementation-experience" class="self-link"></a></h1>
+<h1 data-number="5" id="a-note-on-enumerators"><span class="header-section-number">5</span> A note on enumerators<a href="#a-note-on-enumerators" class="self-link"></a></h1>
+<p>During CWG wording review, it was pointed out that our guiding design
+principle, i.e.,</p>
+<blockquote>
+<p>Given
+<code class="sourceCode cpp"><span class="kw">namespace</span> N <span class="op">{</span> <span class="kw">using</span> Q<span class="op">::</span>x<span class="op">;</span> <span class="op">}</span></code>,
+the reflection
+<code class="sourceCode cpp"><span class="op">^^</span>N<span class="op">::</span>x</code>
+is permitted if
+<code class="sourceCode cpp">N<span class="op">::</span>x</code> already
+named <code class="sourceCode cpp">Q<span class="op">::</span>x</code>
+without the
+<code class="sourceCode cpp"><em>using-declarator</em></code> (i.e., we
+flatten inline and unnamed namespaces).</p>
+</blockquote>
+<p>falls short when considering unscoped enumerators. What should be
+done with the following program?</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> NS <span class="op">{</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> Enum1 <span class="op">{</span> E1 <span class="op">};</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> Enum2 <span class="op">{</span> E2 <span class="op">};</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> Enum<span class="op">::</span>E1<span class="op">;</span>  <span class="co">// reflection-transparent?</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="kw">enum</span> Enum2<span class="op">;</span>  <span class="co">// formally introduces &#39;using Enum2::E2&#39;; reflection-transparent?</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="kw">auto</span> R1 <span class="op">=</span> <span class="op">^^</span>NS<span class="op">::</span>E1<span class="op">;</span>  <span class="co">// OK or error?</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="kw">auto</span> R2 <span class="op">=</span> <span class="op">^^</span>NS<span class="op">::</span>E2<span class="op">;</span>  <span class="co">// OK or error?</span></span></code></pre></div>
+<p>Although our guiding principle suggests that
+<code class="sourceCode cpp"><span class="op">^^</span>NS<span class="op">::</span>E1</code>
+and
+<code class="sourceCode cpp"><span class="op">^^</span>NS<span class="op">::</span>E2</code>
+should be well-formed (i.e., because the qualified lookups for their
+operands would still succeed if the
+<code class="sourceCode cpp"><em>using-declarator</em></code>s were
+ignored), we have very little motivation to address this case at this
+time. We would rather wait until the full Entity Proxies design
+materializes before deciding whether such expressions should represent
+entity proxies introduced by
+<code class="sourceCode cpp"><em>using-declarator</em></code>s or
+whether they should represent the underlying enumerators.</p>
+<p>Leaving the expressions ill-formed for now gives us the freedom to
+decide this for C++29; that is, therefore, our preference. Reflections
+of such enumerators can still be obtained by writing either
+<code class="sourceCode cpp"><span class="op">^^</span>NS<span class="op">::</span>Enum1<span class="op">::</span>E1</code>
+(i.e., fully qualified) or
+<code class="sourceCode cpp">reflect_constant<span class="op">(</span>NS<span class="op">::</span>E1<span class="op">)</span></code>.</p>
+<h2 data-number="5.1" id="stdmetaoperators"><span class="header-section-number">5.1</span>
+<code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>operators</code><a href="#stdmetaoperators" class="self-link"></a></h2>
+<p>The
+<code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>operators</code>
+enum is defined in <a href="https://eel.is/c++draft/meta.reflection.operators" title="21.4.5 Operator representations">[meta.reflection.operators]</a>
+as follows:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> <span class="kw">class</span> operators <span class="op">{</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  op_new<span class="op">,</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  op_delete<span class="op">,</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="kw">enum</span> operators<span class="op">;</span></span></code></pre></div>
+<p>A somewhat unfortunate side-effect is, therefore, that the expression
+<code class="sourceCode cpp"><span class="op">^^</span>std<span class="op">::</span>meta<span class="op">::</span>op_plus</code>
+ill-formed. This came up in CWG wording review, but it’s worth pointing
+out that this is already the status quo in the C++26 DIS (regardless of
+whether you find
+<code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>op_plus</code>
+through the <code class="sourceCode cpp">std</code> module or directly
+through
+<code class="sourceCode cpp"><span class="op">&lt;</span>meta<span class="op">&gt;</span></code>).
+As with the example above, reflections of such enumerators can still be
+obtained by writing either
+<code class="sourceCode cpp">std<span class="op">::</span>meta<span class="op">::</span>operators<span class="op">::</span>op_plus</code>
+or
+<code class="sourceCode cpp">reflect_constant<span class="op">(</span>std<span class="op">::</span>meta<span class="op">::</span>op_plus<span class="op">)</span></code>.</p>
+<h1 data-number="6" id="implementation-experience"><span class="header-section-number">6</span> Implementation experience<a href="#implementation-experience" class="self-link"></a></h1>
 <p>Ville Voutilainen was kind enough to produce an implementation of our
 proposed rule in his “P4324” fork of GCC. This can be found on Godbolt
 (see e.g., <a href="https://godbolt.org/z/TGxEe4hbn">here</a> and <a href="https://godbolt.org/z/nr3sdWWeq">here</a>).</p>
@@ -1941,7 +2019,7 @@ of C++26 Reflection for GCC):</p>
 <p>The authors hold Marek in high enough regard that this would have
 been “implementation experience” enough for us, but we are nevertheless
 thankful to Ville for his efforts.</p>
-<h1 data-number="6" id="wording"><span class="header-section-number">6</span> Wording<a href="#wording" class="self-link"></a></h1>
+<h1 data-number="7" id="wording"><span class="header-section-number">7</span> Wording<a href="#wording" class="self-link"></a></h1>
 <p>Add a new paragraph to <a href="https://eel.is/c++draft/namespace.udecl" title="9.10 The using declaration">[namespace.udecl]</a>:</p>
 <div class="wording">
 <div class="add">
@@ -1963,31 +2041,35 @@ intervenes between the locus of <em>U</em> and the target scope of
 </ul>
 <div id="example-1" class="example" data-num="1">
 <span>[ <em>Example <a href="#example-1">1</a>:</em> </span>
-<div class="sourceCode" id="cb13"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>namespace NS {</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>enum Enum { E1 };</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>using Enum::E1;  // not reflection-transparent</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>inline namespace Inline {</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>void f();</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>inline namespace Sibling {</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>using Inline::f;  // not reflection-transparent</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>using Sibling::f;  // reflection-transparent</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>void g();</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>using NS::g;  // reflection-transparent</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>inline namespace Inline {</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>using NS::g;  // not reflection-transparent</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>constexpr auto R1 = ^^NS::f;  // OK</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>constexpr auto R2 = ^^NS::g;  // OK</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>constexpr auto R3 = ^^NS::E1; // error: using-declarator is not reflection-transparent</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>constexpr auto R4 = ^^NS::Sibling::f;  // error: using-declarator is not reflection-transparent</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>constexpr auto R5 = ^^NS::Inline::g;  // error: using-declarator is not reflection-transparent</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>namespace NS {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>enum class Enum1 { E1 };</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>using Enum::E1;  // not reflection-transparent</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>enum Enum2 { E2 };</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>using Enum::E2;  // not reflection-transparent</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>inline namespace Inline {</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>void f();</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>inline namespace Sibling {</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>using Inline::f;  // not reflection-transparent</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>using Sibling::f;  // reflection-transparent</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>void g();</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>using NS::g;  // reflection-transparent</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>inline namespace Inline {</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>using NS::g;  // not reflection-transparent</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>constexpr auto R1 = ^^NS::f;  // OK</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>constexpr auto R2 = ^^NS::g;  // OK</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>constexpr auto R3 = ^^NS::E1; // error: using-declarator is not reflection-transparent</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>constexpr auto R4 = ^^NS::E2; // error: using-declarator is not reflection-transparent</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>constexpr auto R5 = ^^NS::Sibling::f;  // error: using-declarator is not reflection-transparent</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>constexpr auto R6 = ^^NS::Inline::g;  // error: using-declarator is not reflection-transparent</span></code></pre></div>
 <span> — <em>end example</em> ]</span>
 </div>
 </div>
@@ -2002,9 +2084,11 @@ as follows:</p>
 it is interpreted as such; the identifier is looked up and the
 representation of <em>R</em> is determined as follows:</p>
 <ul>
-<li><span class="marginalizedparent"><a href="#pnum-7" id="pnum-7" class="marginalized">(5.1)</a></span> If lookup finds a declaration
-<span class="add"><ins><em>D</em></ins></span> that replaced a
-<code class="sourceCode cpp"><em>using-declarator</em></code> <span class="add"><ins><em>U</em></ins></span> during a single search (<a href="https://eel.is/c++draft/basic.lookup.general" title="6.5.1 General">[basic.lookup.general]</a>, <a href="https://eel.is/c++draft/namespace.udecl" title="9.10 The using declaration">[namespace.udecl]</a>), <span class="rm"><del><em>R</em> is ill-formed</del></span> <span class="add"><ins><em>U</em> shall be reflection-transparent (<a href="https://eel.is/c++draft/namespace.udecl" title="9.10 The using declaration">[namespace.udecl]</a>)</ins></span>.</li>
+<li><span class="marginalizedparent"><a href="#pnum-7" id="pnum-7" class="marginalized">(5.1)</a></span> If lookup finds a declaration that
+replaced a <code class="sourceCode cpp"><em>using-declarator</em></code>
+<span class="add"><ins><em>U</em></ins></span> during a single search
+(<a href="https://eel.is/c++draft/basic.lookup.general" title="6.5.1 General">[basic.lookup.general]</a> <span class="rm"><del>,</del></span> <span class="rm"><del><a href="https://eel.is/c++draft/namespace.udecl" title="9.10 The using declaration">[namespace.udecl]</a></del></span>),
+<span class="rm"><del><em>R</em> is ill-formed</del></span> <span class="add"><ins><em>U</em> shall be reflection-transparent (<a href="https://eel.is/c++draft/namespace.udecl" title="9.10 The using declaration">[namespace.udecl]</a>)</ins></span>.</li>
 <li><span class="marginalizedparent"><a href="#pnum-8" id="pnum-8" class="marginalized">(5.2)</a></span> <span class="rm"><del>Otherwise,
 if</del></span> <span class="add"><ins>If</ins></span> lookup finds a
 namespace alias (<a href="https://eel.is/c++draft/namespace.alias" title="9.9.3 Namespace alias">[namespace.alias]</a>), all declarations
@@ -2016,11 +2100,11 @@ that namespace.</li>
 <li><span class="marginalizedparent"><a href="#pnum-10" id="pnum-10" class="marginalized">(5.4)</a></span> Otherwise, […]</li>
 </ul>
 </div>
-<h1 data-number="7" id="acknowledgments"><span class="header-section-number">7</span> Acknowledgments<a href="#acknowledgments" class="self-link"></a></h1>
+<h1 data-number="8" id="acknowledgments"><span class="header-section-number">8</span> Acknowledgments<a href="#acknowledgments" class="self-link"></a></h1>
 <p>The authors would like to thank Hubert Tong for his review of our
 paper, and for helping ensure that the specification wording matches our
 design intent.</p>
-<h1 data-number="8" id="bibliography"><span class="header-section-number">8</span> References<a href="#bibliography" class="self-link"></a></h1>
+<h1 data-number="9" id="bibliography"><span class="header-section-number">9</span> References<a href="#bibliography" class="self-link"></a></h1>
 <div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
 <div id="ref-P2996R13" class="csl-entry" role="listitem">
 [P2996R13] Barry Revzin, Wyatt Childers, Peter Dimov, Andrew Sutton,
