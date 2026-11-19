@@ -283,6 +283,11 @@ Modify [expr.reflect]/5 as follows:
 :::
 
 
+# Acknowledgments
+
+The authors would like to thank Hubert Tong for his review of our paper, and for helping ensure that the specification wording matches our design intent.
+
+
 ---
 references:
 ---
